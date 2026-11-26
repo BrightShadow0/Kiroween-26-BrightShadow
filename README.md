@@ -1,54 +1,47 @@
-# Specter Engine
+# Specter Engine — Kiroween 2026 (Skeleton Crew)
 
-> Kiroween 2026 submission by BrightShadow0 (solo entry).
+A general puzzle-progression game engine plus two complete games built as pure
+content on top of it. **Zero bespoke code per game**: every rule, room, item,
+puzzle, hint and ending lives in a JSON content file the engine interprets.
 
-- **Category:** Skeleton Crew
-- **Demo video (YouTube, under 3 min):** [link]
-- **App URL:** https://brightshadow0.github.io/Kiroween-26-BrightShadow/
+## The two applications (Skeleton Crew layout)
 
-## What it does
+| Folder | App | Kind |
+| --- | --- | --- |
+| `/forgotten-temple` | The Forgotten Temple | Timed escape room (8-minute countdown, wrong moves cost time) |
+| `/case-zero` | Case Zero | Untimed detective game (4 locations, evidence board, 2 endings) |
 
-Specter Engine is a reusable puzzle-progression engine. Every game on it is defined as pure content in a single JSON game file: rooms, events, clues, unlock conditions, hints, timers and items. All game logic lives in the engine; a game file is data, never code.
+Each folder is fully self-contained: `engine.js` + `renderer.js` + `schema.js`
+(the Specter Engine), `game.html` (the player), `game.json` (all game content),
+`tests.js` (node test suite), and `assets/scenes/` (per-room scene art).
 
-To prove one skeleton can drive games that play nothing alike, it ships with two:
+## Run them
 
-- **The Forgotten Temple** (`games/forgotten-temple.json`) - a timed survival escape. A visible 10-minute countdown runs while you combine ancient objects and work multi-step mechanisms across 4 linearly unlocking rooms. When the timer expires, the chamber resets.
-- **Case Zero** (`games/case-zero.json`) - an untimed, branching detective investigation. Move freely between 4 locations, gather evidence, link related evidence into deductions on the evidence board, and accuse a suspect. 2 endings, no punishment for wrong guesses.
+Everything is static. Either open the live site:
 
-## How Kiro was used
+- Landing: https://brightshadow0.github.io/Kiroween-26-BrightShadow/
+- Temple: https://brightshadow0.github.io/Kiroween-26-BrightShadow/forgotten-temple/game.html
+- Case Zero: https://brightshadow0.github.io/Kiroween-26-BrightShadow/case-zero/game.html
 
-Built with the Kiro CLI (v3) agent in a single one-shot session: the full spec (engine responsibilities, game file format, both games, separation tests) was given as one prompt and the agent generated the engine, both content files, the test suite and its own spec documents. The spec artifacts live in `.kiro/specs/specter-engine/` (requirements.md, design.md, tasks.md).
+or serve the repo locally (`npx serve .` or any static server) and open
+`index.html` — pages fetch their JSON, so they need HTTP, not `file://`.
 
-## Setup and run
-
-No build step, no dependencies - it is a static site.
-
-```bash
-# serve locally
-python3 -m http.server 8000
-# open http://localhost:8000
-```
-
-Or just open the live GitHub Pages deployment above.
-
-Run the tests (also runnable in the browser via tests/tests.html):
-
-```bash
-node tests/tests.js
-```
-
-## Project structure
+## Run the tests
 
 ```
-.kiro/              Kiro specs, steering and hooks (required, do not gitignore)
-engine/             The engine: state machine (engine.js), generic UI (renderer.js), content validation (schema.js)
-game.html           Generic player: loads a game file by ?game=<name> and runs it entirely through the engine
-games/              Pure-content game files (JSON): forgotten-temple.json, case-zero.json
-tests/              Schema validation, engine/game separation proofs, full-game walkthrough smoke tests (65 tests)
-index.html          Landing page
-LICENSE             MIT
+cd forgotten-temple && node tests.js   # 67 tests
+cd case-zero && node tests.js          # 62 tests
 ```
 
-## License
+The suites include full playthroughs of both games driven entirely through the
+engine's public API, proving the games never bypass the engine.
 
-MIT - see LICENSE.
+## Built with Kiro
+
+Spec-driven development: see `/.kiro/specs/` for the engine spec and the
+expansion spec (requirements, design, tasks). The engine, both content files,
+the test suites and this layout were generated and refined in Kiro CLI
+sessions from those specs.
+
+Built by [Sheldon Menezes](https://github.com/BrightShadow0) ·
+[Devpost](https://devpost.com/sheldonpmenezes)
