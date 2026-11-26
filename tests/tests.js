@@ -608,9 +608,9 @@
     T({ type: 'pickup', itemId: 'ancient-staff' });
     r = T({ type: 'combine', itemIdA: 'sun-disc', itemIdB: 'ancient-staff' });
     assert(r.ok, 'charge staff: ' + r.message);
-    r = T({ type: 'action', actionId: 'light-sconces' });
+    r = T({ type: 'roomAction', actionId: 'light-sconces' });
     assert(r.ok, 'sconces: ' + r.message);
-    r = T({ type: 'action', actionId: 'unlock-gate' });
+    r = T({ type: 'roomAction', actionId: 'unlock-gate' });
     assert(r.ok, 'gate: ' + r.message);
     r = T({ type: 'move', roomId: 'reliquary' });
     assert(r.ok, 'to reliquary: ' + r.message);
@@ -653,7 +653,7 @@
     T({ type: 'trigger', eventId: 'serpent-lock' });
     T({ type: 'combine', itemIdA: 'torch', itemIdB: 'flint-shard' });
     T({ type: 'move', roomId: 'altar-room' });
-    T({ type: 'action', actionId: 'light-sconces' });
+    T({ type: 'roomAction', actionId: 'light-sconces' });
     assert(!T({ type: 'move', roomId: 'reliquary' }).ok, 'still locked without gate open');
   });
 
