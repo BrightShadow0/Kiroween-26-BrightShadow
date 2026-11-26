@@ -82,10 +82,30 @@
         return !!_state.flags[cond.name];
       case 'hasDeduction':
         return _state.deductions.includes(cond.id);
+      case 'allOf':
+        return Array.isArray(cond.conditions) && cond.conditions.length > 0 &&
+               cond.conditions.every(_evalCondition);
+      case 'anyOf':
+        return Array.isArray(cond.conditions) && cond.conditions.some(_evalCondition);
+      case 'not':
+        return !!cond.condition && !_evalCondition(cond.condition);
       default:
         console.warn('[SpecterEngine] unknown condition type:', cond.type);
         return false;
     }
+  }
+
+  /**
+   * Timed games only: subtract seconds from the countdown as a penalty for a
+   * wrong or premature action. Returns a short message when a penalty was
+   * applied, null otherwise.
+   */
+  function _applyTimePenalty(seconds) {
+    if (!_gameData || !_gameData.meta.timed || !seconds || seconds <= 0) return null;
+    if (!_state || _state.ended) return null;
+    _state.timerRemaining = Math.max(0, _state.timerRemaining - seconds);
+    if (_onTickCb) _onTickCb(_state.timerRemaining);
+    return `The curse stirs impatiently… (−${seconds}s)`;
   }
 
   /** Apply a single effect to _state. Returns a human-readable message or null. */
@@ -160,7 +180,9 @@
    */
   function _executeAction(action) {
     if (action.condition && !_evalCondition(action.condition)) {
-      return { ok: false, message: action.failMessage || 'You cannot do that right now.' };
+      const penalized = _applyTimePenalty(action.penaltySeconds);
+      const base = action.failMessage || 'You cannot do that right now.';
+      return { ok: false, message: penalized ? base + ' ' + penalized : base };
     }
     const msg = _applyEffects(action.effects);
     return { ok: true, message: msg || action.successMessage || 'Done.' };
@@ -480,7 +502,9 @@
         const rule = (itemA.combinesWith && itemA.combinesWith[action.itemIdB]) ||
                      (itemB.combinesWith && itemB.combinesWith[action.itemIdA]);
         if (!rule) {
-          result = { ok: false, message: `${itemA.name} and ${itemB.name} don't combine into anything.` };
+          // Content may set meta.combineFailPenaltySeconds to punish brute-forcing pairs
+          const penalized = _applyTimePenalty(_gameData.meta.combineFailPenaltySeconds);
+          result = { ok: false, message: `${itemA.name} and ${itemB.name} don't combine into anything.` + (penalized ? ' ' + penalized : '') };
           break;
         }
         // Remove source items, grant result
