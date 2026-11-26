@@ -365,32 +365,38 @@
     {
       "id": "hint-serpent-lock",
       "forPuzzle": "serpent-lock",
-      "text": "The serpent lock responds to light. Search the pillars for something to strike a spark, then combine it with the torch in your inventory before you touch the mechanism."
+      "text": "The serpent lock responds to light. Search the pillars for something to strike a spark, then combine it with the torch in your inventory before you touch the mechanism.",
+      "highlightText": "Carved serpents coil around every pillar, their eye sockets hollow"
     },
     {
       "id": "hint-idol-scales",
       "forPuzzle": "idol-scales",
-      "text": "The carvings give the order: day rises, night follows, and the stars watch over all. Sun, then moon, then star."
+      "text": "The carvings give the order: day rises, night follows, and the stars watch over all. Sun, then moon, then star.",
+      "highlightText": "first the sun, then the moon, then the star"
     },
     {
       "id": "hint-collapsed-passage",
       "forPuzzle": "idol-scales",
-      "text": "The chasm in the collapsed passage needs a rope with a hook. One lies with the idols' reward, the other sleeps in the crypt."
+      "text": "The chasm in the collapsed passage needs a rope with a hook. One lies with the idols' reward, the other sleeps in the crypt.",
+      "highlightText": "a dark chasm splits the passage in two"
     },
     {
       "id": "hint-mirror-alignment",
       "forPuzzle": "mirror-alignment",
-      "text": "The mirrors are blind with dust. A cleaning cloth lies beyond the chasm in the collapsed passage. Once they gleam, follow the carvings: left, then centre, then right \u2014 with a burning torch in hand."
+      "text": "The mirrors are blind with dust. A cleaning cloth lies beyond the chasm in the collapsed passage. Once they gleam, follow the carvings: left, then centre, then right \u2014 with a burning torch in hand.",
+      "highlightText": "a figure cleans a mirror with a cloth, then turns the left mirror, then the centre, then the right"
     },
     {
       "id": "hint-reliquary-gate",
       "forPuzzle": "final-mechanism",
-      "text": "The reliquary only opens to light and bronze: light the altar sconces with your torch, and find the serpent-carved key beyond the northern arch."
+      "text": "The reliquary only opens to light and bronze: light the altar sconces with your torch, and find the serpent-carved key beyond the northern arch.",
+      "highlightText": "bronze keyhole shaped like a coiled serpent"
     },
     {
       "id": "hint-final-mechanism",
       "forPuzzle": "final-mechanism",
-      "text": "The star-shaped socket accepts only an anointed relic: combine the sun disc with the ancient staff, then anoint it with sacred oil from the crypt. The solar mechanism is dead until the mirrors feed it."
+      "text": "The star-shaped socket accepts only an anointed relic: combine the sun disc with the ancient staff, then anoint it with sacred oil from the crypt. The solar mechanism is dead until the mirrors feed it.",
+      "highlightText": "a star-shaped socket"
     }
   ],
   "events": [
