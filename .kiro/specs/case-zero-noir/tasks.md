@@ -5,4 +5,4 @@
 - [x] Add office hint for full location coverage
 - [x] Fix back link href in both game.html files (../index.html)
 - [x] Both test suites green
-- [ ] Visual verification in browser + screenshots
+- [x] Visual verification in browser + screenshots
