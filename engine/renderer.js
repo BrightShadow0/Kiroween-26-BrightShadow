@@ -102,7 +102,7 @@
     const timerEl = document.getElementById('specter-timer');
     if (!timerEl) return;
     timerEl.textContent = '⏳ ' + formatTime(remaining);
-    timerEl.className   = 'specter-timer' + (remaining <= 60 ? ' timer-urgent' : '');
+    timerEl.className   = 'specter-timer' + (remaining <= 60 ? ' timer-urgent' : remaining <= 120 ? ' timer-warn' : '');
   }
 
   // ── Sections ──────────────────────────────────────────────────────────────
@@ -135,10 +135,34 @@
     container.appendChild(header);
   }
 
+  // Per-room scene art: inline SVG scenes keyed by theme + room id.
+  const ROOM_SCENES = {
+    'temple:entrance-hall': 'M0,90 Q30,40 60,85 T120,70 T180,80 T240,60 T300,85 T360,75 T420,88 T480,72 T540,80 T600,65 T660,85 T720,70 T780,80 T840,60 T900,78 T960,70 T1024,85 L1024,160 L0,160 Z',
+    'temple:mirror-chamber': 'M160,140 L160,60 L220,60 L220,140 M402,140 L402,50 L462,50 L462,140 M644,140 L644,65 L704,65 L704,140 M0,150 L1024,150',
+    'temple:altar-room': 'M462,140 L462,80 L562,80 L562,140 M412,140 L612,140 M512,30 L512,55 M487,42 L537,42',
+    'temple:reliquary': 'M512,20 L530,80 L592,80 L544,116 L564,178 L512,142 L460,178 L480,116 L432,80 L494,80 Z',
+    'noir:detective-office': 'M0,150 L0,90 L80,90 L80,40 L140,40 L140,110 L240,110 L240,150 M340,150 L340,70 L420,70 L420,150 M520,150 L520,30 L600,30 L600,150 M700,150 L700,85 L800,85 L800,150 M900,150 L900,55 L980,55 L980,150',
+    'noir:harbour-docks': 'M0,110 Q120,100 240,112 T480,108 T720,114 T1024,106 L1024,160 L0,160 Z M120,110 L120,60 L135,60 L135,110 M520,112 L520,50 L535,50 L535,112',
+    'noir:riverside-manor': 'M362,140 L362,90 L512,20 L662,90 L662,140 M482,140 L482,100 L542,100 L542,140 M0,150 L1024,150',
+    'noir:noir-cafe': 'M300,140 L300,110 L420,110 L420,140 M310,110 Q360,70 410,110 M700,140 L700,60 L860,60 L860,140 M760,60 L760,30 M790,60 L790,30',
+    'temple:default': 'M0,120 Q256,70 512,110 T1024,95 L1024,160 L0,160 Z',
+    'noir:default': 'M0,130 L60,130 L60,80 L120,80 L120,130 L220,130 L220,50 L300,50 L300,130 L420,130 L420,95 L500,95 L500,130 L640,130 L640,60 L720,60 L720,130 L850,130 L850,85 L930,85 L930,130 L1024,130 L1024,160 L0,160 Z'
+  };
+
   function renderRoom(state, container) {
     const room = state.room;
-    const section = el('section', { className: 'specter-room' },
-      el('h2', { className: 'room-name', textContent: '📍 ' + room.name }),
+    const theme = (state.meta && state.meta.theme) || 'default';
+    const scene = ROOM_SCENES[theme + ':' + room.id] || ROOM_SCENES[theme + ':default'] || ROOM_SCENES['temple:default'];
+    const sceneEl = document.createElement('div');
+    sceneEl.className = 'room-scene scene-' + theme;
+    sceneEl.innerHTML =
+      '<svg viewBox="0 0 1024 160" preserveAspectRatio="none" aria-hidden="true">' +
+      '<path d="' + scene + '" fill="currentColor"/>' +
+      '</svg>' +
+      '<span class="scene-glow"></span>' +
+      '<h2 class="room-name">📍 ' + room.name + '</h2>';
+    const section = el('section', { className: 'specter-room room-enter' },
+      sceneEl,
       el('p',  { className: 'room-desc', textContent: room.description })
     );
     container.appendChild(section);
@@ -481,7 +505,9 @@
       return;
     }
 
-    // Clear and rebuild
+    // Clear and rebuild. Carry the content's theme onto the root so the page
+    // CSS can re-skin per game (temple ember gold, noir blue, ...).
+    _root.dataset.theme = (state.meta && state.meta.theme) || 'default';
     _root.innerHTML = '';
 
     // Ending overlay takes over the whole screen
