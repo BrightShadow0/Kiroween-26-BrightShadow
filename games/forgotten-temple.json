@@ -1,0 +1,335 @@
+{
+  "meta": {
+    "title": "The Forgotten Temple",
+    "description": "You are trapped in a cursed ancient temple. A malevolent enchantment drives a ten-minute countdown — when it expires the stone chamber resets, erasing your progress. Solve the mechanisms, combine the relics, and escape before the curse reclaims you.",
+    "timed": true,
+    "timeLimitSeconds": 600,
+    "onTimerEnd": [
+      {
+        "type": "resetRooms",
+        "message": "The ancient curse completes its cycle. The chamber rumbles and resets…"
+      }
+    ]
+  },
+  "rooms": [
+    {
+      "id": "entrance-hall",
+      "name": "Entrance Hall",
+      "description": "Dust-choked light falls through cracks in the ceiling. Carved serpents coil around every pillar. The air smells of old stone and something metallic. A sealed arch looms to the north; a dark passage leads east.",
+      "exits": ["mirror-chamber", "altar-room"],
+      "items": ["sun-disc", "torch"],
+      "events": ["serpent-lock"],
+      "actions": [],
+      "unlockCondition": null
+    },
+    {
+      "id": "mirror-chamber",
+      "name": "Chamber of Mirrors",
+      "description": "Three bronze mirrors stand on stone pedestals, each slightly angled. When aligned correctly they should focus a beam of light onto the carved eye above the northern door. The exit to the sanctum lies beyond that eye.",
+      "exits": ["entrance-hall", "sanctum"],
+      "items": ["bronze-key"],
+      "events": ["mirror-alignment"],
+      "actions": [],
+      "unlockCondition": {
+        "type": "solvedPuzzle",
+        "id": "serpent-lock"
+      }
+    },
+    {
+      "id": "altar-room",
+      "name": "Altar Room",
+      "description": "A cracked altar dominates the room. Stone sconces hold unlit torches. An inscription reads: \"Light feeds the stone; the staff awaits the sun.\" A locked iron gate bars the way to the reliquary.",
+      "exits": ["entrance-hall", "reliquary"],
+      "items": ["ancient-staff"],
+      "events": [],
+      "actions": [
+        {
+          "id": "light-sconces",
+          "type": "use",
+          "label": "Light the Sconces",
+          "description": "Use your torch to light the altar sconces.",
+          "condition": { "type": "hasItem", "id": "torch" },
+          "failMessage": "You need a light source to ignite the sconces.",
+          "effects": [
+            { "type": "setFlag", "name": "sconces-lit", "value": true, "message": "The sconces blaze to life, bathing the altar in warm orange light." },
+            { "type": "setFlag", "name": "altar-lit", "value": true }
+          ],
+          "successMessage": "Golden light fills the altar room."
+        }
+      ],
+      "unlockCondition": null
+    },
+    {
+      "id": "reliquary",
+      "name": "The Reliquary",
+      "description": "A circular chamber. At its centre stands a stone pedestal with a star-shaped socket. The exit — a massive iron door engraved with solar symbols — is sealed by a mechanism that demands a charged relic. This is the way out.",
+      "exits": ["altar-room"],
+      "items": [],
+      "events": ["final-mechanism"],
+      "actions": [],
+      "unlockCondition": {
+        "type": "solvedPuzzle",
+        "id": "mirror-alignment"
+      }
+    }
+  ],
+  "items": [
+    {
+      "id": "sun-disc",
+      "name": "Sun Disc",
+      "icon": "☀️",
+      "description": "A flat disc of hammered gold, etched with radiating lines. It fits in the palm of your hand.",
+      "examineText": "One face bears the symbol of a rising sun; the other has a slot that might accept a staff fitting."
+    },
+    {
+      "id": "torch",
+      "name": "Unlit Torch",
+      "icon": "🔦",
+      "description": "A pitch-soaked torch. It needs a flame to be useful.",
+      "examineText": "Standard temple torch — pitch-sealed reed wrapped in cloth. It will burn for a good while once lit.",
+      "combinesWith": {
+        "flint-shard": {
+          "result": "lit-torch",
+          "message": "You strike the flint against the torch head. It catches with a warm crack."
+        }
+      }
+    },
+    {
+      "id": "flint-shard",
+      "name": "Flint Shard",
+      "icon": "🪨",
+      "description": "A sharp chip of dark flint, useful for striking sparks.",
+      "examineText": "Knapped to a fine edge. Good for making fire."
+    },
+    {
+      "id": "lit-torch",
+      "name": "Lit Torch",
+      "icon": "🔥",
+      "description": "A blazing torch. It lights your way and ignites whatever needs burning.",
+      "examineText": "The flame burns steadily, casting dancing shadows across carved stone walls.",
+      "useText": "You hold the torch aloft — it illuminates the area but needs a specific target to be useful."
+    },
+    {
+      "id": "ancient-staff",
+      "name": "Ancient Staff",
+      "icon": "🪄",
+      "description": "A carved wooden staff banded with tarnished copper. One end has a hollow socket.",
+      "examineText": "The socket at the top is exactly the right size to seat a disc or medallion.",
+      "combinesWith": {
+        "sun-disc": {
+          "result": "charged-staff",
+          "message": "You press the sun disc into the staff's socket. It clicks home with a resonant hum — the copper bands glow faintly."
+        }
+      }
+    },
+    {
+      "id": "charged-staff",
+      "name": "Charged Staff",
+      "icon": "✨",
+      "description": "The ancient staff crowned with the sun disc. It pulses with restrained energy.",
+      "examineText": "The combined relic hums in your grip. Solar symbols across the disc glow with a steady golden light.",
+      "useEffects": [
+        { "type": "setFlag", "name": "staff-used-on-pedestal", "message": "You drive the charged staff into the pedestal socket. The room shudders." }
+      ],
+      "useText": "The staff radiates warmth. It is meant for the star-shaped pedestal in the reliquary."
+    },
+    {
+      "id": "bronze-key",
+      "name": "Bronze Key",
+      "icon": "🗝️",
+      "description": "A heavy bronze key with serpentine scrollwork on the bow.",
+      "examineText": "It matches the iron gate lock leading to the reliquary.",
+      "useEffects": [
+        { "type": "setFlag", "name": "reliquary-gate-open", "message": "The bronze key turns in the iron gate with a satisfying clunk. The gate swings open." }
+      ]
+    }
+  ],
+  "clues": [],
+  "hints": [
+    {
+      "id": "hint-serpent-lock",
+      "forPuzzle": "serpent-lock",
+      "text": "The serpent lock responds to light. Find a way to illuminate it — something in the entrance hall can help you start a fire."
+    },
+    {
+      "id": "hint-mirror-alignment",
+      "forPuzzle": "mirror-alignment",
+      "text": "The mirrors must be adjusted in sequence: left first, then centre, then right. Each adjustment narrows the beam toward the carved eye."
+    },
+    {
+      "id": "hint-final-mechanism",
+      "forPuzzle": "final-mechanism",
+      "text": "The star-shaped socket in the reliquary accepts a charged relic. Combine the sun disc with the ancient staff, then use the result on the pedestal."
+    }
+  ],
+  "events": [
+    {
+      "id": "serpent-lock",
+      "name": "Serpent Lock",
+      "description": "A stone panel carved with two coiled serpents blocks the northern arch. Their eyes are hollow — sockets for some missing light source.",
+      "steps": [
+        {
+          "id": "serpent-step-1",
+          "description": "Retrieve the flint shard from the base of the east pillar.",
+          "actionLabel": "Search Pillar Base",
+          "effects": [
+            { "type": "giveItem", "itemId": "flint-shard", "message": "You pry a flint shard from the mortar at the pillar's base." }
+          ]
+        },
+        {
+          "id": "serpent-step-2",
+          "description": "Combine the flint shard with the unlit torch to make a light source.",
+          "actionLabel": "Strike Flint to Torch",
+          "action": {
+            "type": "combine",
+            "label": "Strike Flint to Torch",
+            "condition": { "type": "hasItem", "id": "flint-shard" },
+            "failMessage": "You need the flint shard first.",
+            "effects": []
+          },
+          "effects": [
+            { "type": "removeItem", "itemId": "torch" },
+            { "type": "removeItem", "itemId": "flint-shard" },
+            { "type": "giveItem",   "itemId": "lit-torch", "message": "The torch blazes to life." }
+          ]
+        },
+        {
+          "id": "serpent-step-3",
+          "description": "Hold the lit torch to the serpents' eye sockets to trigger the mechanism.",
+          "actionLabel": "Illuminate the Serpents",
+          "action": {
+            "type": "use",
+            "label": "Illuminate the Serpents",
+            "condition": { "type": "hasItem", "id": "lit-torch" },
+            "failMessage": "You need a lit torch to trigger the serpent lock.",
+            "effects": []
+          },
+          "effects": [
+            { "type": "setFlag", "name": "serpent-lock-open", "value": true }
+          ]
+        }
+      ],
+      "onComplete": [
+        { "type": "setFlag", "name": "north-arch-open", "value": true, "message": "The serpents' eyes ignite with golden fire. With a grinding rumble the stone arch slides open, revealing the mirror chamber beyond." }
+      ]
+    },
+    {
+      "id": "mirror-alignment",
+      "name": "Mirror Alignment",
+      "description": "Three bronze mirrors on pedestals must be rotated in the correct sequence to focus a beam of light onto the carved eye above the sanctum door.",
+      "steps": [
+        {
+          "id": "mirror-step-1",
+          "description": "Rotate the left mirror to angle the light inward.",
+          "actionLabel": "Rotate Left Mirror",
+          "effects": [
+            { "type": "setFlag", "name": "mirror-left-set", "value": true, "message": "The left mirror swings with a metallic groan. A thin beam of light appears." }
+          ]
+        },
+        {
+          "id": "mirror-step-2",
+          "description": "Rotate the centre mirror to redirect the beam upward.",
+          "actionLabel": "Rotate Centre Mirror",
+          "action": {
+            "type": "trigger",
+            "label": "Rotate Centre Mirror",
+            "condition": { "type": "flag", "name": "mirror-left-set" },
+            "failMessage": "The centre mirror must follow the left one.",
+            "effects": []
+          },
+          "effects": [
+            { "type": "setFlag", "name": "mirror-centre-set", "value": true, "message": "The centre mirror catches the beam and bends it sharply upward." }
+          ]
+        },
+        {
+          "id": "mirror-step-3",
+          "description": "Rotate the right mirror to aim the converged beam at the carved eye.",
+          "actionLabel": "Rotate Right Mirror",
+          "action": {
+            "type": "trigger",
+            "label": "Rotate Right Mirror",
+            "condition": { "type": "flag", "name": "mirror-centre-set" },
+            "failMessage": "Align the centre mirror first.",
+            "effects": []
+          },
+          "effects": [
+            { "type": "setFlag", "name": "mirror-right-set", "value": true }
+          ]
+        }
+      ],
+      "onComplete": [
+        { "type": "setFlag", "name": "sanctum-door-open", "value": true, "message": "Three beams merge into one blazing column. The carved eye above the door blazes to life — and the sanctum door grinds open." }
+      ]
+    },
+    {
+      "id": "final-mechanism",
+      "name": "Star Pedestal",
+      "description": "A stone pedestal with a star-shaped socket dominates the reliquary's centre. Carved text reads: 'The sun-bearer opens the solar door.'",
+      "steps": [
+        {
+          "id": "pedestal-step-1",
+          "description": "Place the charged staff into the star-shaped socket.",
+          "actionLabel": "Insert Charged Staff",
+          "action": {
+            "type": "use",
+            "label": "Insert Charged Staff",
+            "condition": { "type": "hasItem", "id": "charged-staff" },
+            "failMessage": "The socket demands the sun disc mounted on the ancient staff. You do not have it.",
+            "effects": []
+          },
+          "effects": [
+            { "type": "removeItem", "itemId": "charged-staff" },
+            { "type": "setFlag",    "name": "staff-inserted",  "value": true, "message": "The charged staff slides into the socket with a resonant chime. The floor trembles." }
+          ]
+        },
+        {
+          "id": "pedestal-step-2",
+          "description": "Activate the solar mechanism to unseal the iron door.",
+          "actionLabel": "Activate Solar Mechanism",
+          "action": {
+            "type": "trigger",
+            "label": "Activate Solar Mechanism",
+            "condition": { "type": "flag", "name": "staff-inserted" },
+            "failMessage": "The pedestal needs the charged staff first.",
+            "effects": []
+          },
+          "effects": [
+            { "type": "setFlag", "name": "exit-door-open", "value": true }
+          ]
+        },
+        {
+          "id": "pedestal-step-3",
+          "description": "Push open the iron door and walk free.",
+          "actionLabel": "Escape Through the Door",
+          "action": {
+            "type": "trigger",
+            "label": "Escape Through the Door",
+            "condition": { "type": "flag", "name": "exit-door-open" },
+            "failMessage": "The door is still sealed.",
+            "effects": []
+          },
+          "effects": [
+            { "type": "triggerEnding", "endingId": "escape-victory", "message": "You step through the threshold…" }
+          ]
+        }
+      ],
+      "onComplete": []
+    }
+  ],
+  "endings": [
+    {
+      "id": "escape-victory",
+      "title": "Escaped!",
+      "text": "You burst through the iron door into blinding daylight. Behind you the temple groans as its curse, deprived of a victim, collapses inward. You made it. The forgotten temple is forgotten once more — this time, without you inside it.",
+      "isWin": true,
+      "icon": "🏛️"
+    },
+    {
+      "id": "timer-doom",
+      "title": "The Curse Resets",
+      "text": "The countdown reaches zero. The stone floor dissolves beneath your feet, the torchlight snuffs out, and when the light returns everything is as it was. The temple begins again — and so, it seems, do you.",
+      "isWin": false,
+      "icon": "💀"
+    }
+  ]
+}
