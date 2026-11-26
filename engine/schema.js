@@ -8,7 +8,7 @@
  * the engine understands.
  */
 
-const SUPPORTED_CONDITION_TYPES = ['hasItem', 'solvedPuzzle', 'flag', 'hasDeduction'];
+const SUPPORTED_CONDITION_TYPES = ['hasItem', 'solvedPuzzle', 'flag', 'hasDeduction', 'allOf', 'anyOf', 'not'];
 const SUPPORTED_ACTION_TYPES    = ['pickup', 'examine', 'use', 'combine', 'move', 'trigger', 'accuse', 'link'];
 const SUPPORTED_EFFECT_TYPES    = ['setFlag', 'giveItem', 'removeItem', 'solveRoom', 'triggerEnding', 'resetRooms', 'addDeduction'];
 const TOP_LEVEL_KEYS = new Set([
@@ -40,6 +40,22 @@ function validateCondition(cond, path) {
   }
   if (cond.type === 'flag' && !cond.name) {
     errors.push(err(path, 'condition type "flag" requires field "name"'));
+  }
+  if (cond.type === 'allOf' || cond.type === 'anyOf') {
+    if (!Array.isArray(cond.conditions) || cond.conditions.length === 0) {
+      errors.push(err(path, `condition type "${cond.type}" requires a non-empty "conditions" array`));
+    } else {
+      cond.conditions.forEach(function (c, i) {
+        errors.push(...validateCondition(c, path + '.conditions[' + i + ']'));
+      });
+    }
+  }
+  if (cond.type === 'not') {
+    if (!cond.condition) {
+      errors.push(err(path, 'condition type "not" requires a nested "condition"'));
+    } else {
+      errors.push(...validateCondition(cond.condition, path + '.condition'));
+    }
   }
   return errors;
 }
