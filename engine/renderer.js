@@ -68,11 +68,22 @@
   }
 
   function renderMessages(container) {
+    // The journal gets its own section so it always occupies dedicated space,
+    // even before the first entry arrives.
+    const section = el('section', { className: 'specter-journal' },
+      el('h3', { textContent: '📜 Journal' })
+    );
     const log = el('div', { className: 'specter-log' });
+    if (_msgQueue.length === 0) {
+      log.appendChild(el('p', { className: 'log-entry msg-info', textContent: 'Nothing recorded yet. What you find will be written down here.' }));
+    }
     for (const m of _msgQueue) {
       log.appendChild(el('p', { className: 'log-entry ' + m.cssClass, textContent: m.text }));
     }
-    container.appendChild(log);
+    section.appendChild(log);
+    container.appendChild(section);
+    // Keep the newest entry in view
+    log.scrollTop = log.scrollHeight;
   }
 
   // ── Action helper: dispatch to engine + re-render ─────────────────────────
@@ -322,9 +333,14 @@
       return;
     }
 
-    const clueList = el('div', { className: 'clue-list' });
+    // Each piece of evidence renders as a full readable entry, not a chip,
+    // so the accumulated case file can actually be read.
+    const clueList = el('div', { className: 'clue-entries' });
     for (const clue of clues) {
-      clueList.appendChild(el('div', { className: 'clue-chip', textContent: clue.name || clue.id }));
+      clueList.appendChild(el('div', { className: 'clue-entry' },
+        el('div', { className: 'clue-entry-name', textContent: clue.name || clue.id }),
+        el('div', { className: 'clue-entry-desc', textContent: clue.description || '' })
+      ));
     }
     section.appendChild(clueList);
 
