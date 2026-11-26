@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Specter Engine</title>
+  <style>
+    /* ── Reset & base ──────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep:    #0d0f14;
+      --bg-panel:   #141720;
+      --bg-card:    #1b1f2e;
+      --bg-hover:   #22273a;
+      --accent:     #c8a84b;
+      --accent-dim: #8a7030;
+      --danger:     #c0392b;
+      --success:    #27ae60;
+      --text-main:  #d4d8e8;
+      --text-muted: #7a7f99;
+      --text-dim:   #4a4f66;
+      --border:     #2a2f45;
+      --radius:     6px;
+      --font-main:  'Georgia', serif;
+      --font-ui:    'Trebuchet MS', system-ui, sans-serif;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg-deep);
+      color: var(--text-main);
+      font-family: var(--font-main);
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    /* ── Loading / error states ────────────────────────────────────────────── */
+    #specter-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      font-size: 1.2rem;
+      color: var(--text-muted);
+      font-family: var(--font-ui);
+    }
+
+    .specter-error {
+      color: var(--danger);
+      padding: 2rem;
+      text-align: center;
+      font-family: var(--font-ui);
+    }
+
+    /* ── Root layout ───────────────────────────────────────────────────────── */
+    #specter-root {
+      min-height: 100vh;
+    }
+
+    .specter-layout {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 1.5rem;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      min-height: 100vh;
+    }
+
+    @media (max-width: 768px) {
+      .specter-layout {
+        grid-template-columns: 1fr;
+        padding: 1rem;
+      }
+    }
+
+    .col-main, .col-side {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    /* ── Header ────────────────────────────────────────────────────────────── */
+    .specter-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    .specter-game-title {
+      font-family: var(--font-ui);
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+    }
+
+    .specter-header-controls {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    /* ── Timer ─────────────────────────────────────────────────────────────── */
+    .specter-timer {
+      font-family: var(--font-ui);
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      padding: 0.2rem 0.6rem;
+      background: rgba(200, 168, 75, 0.08);
+      border: 1px solid var(--accent-dim);
+      border-radius: var(--radius);
+      transition: color 0.3s, border-color 0.3s;
+    }
+
+    .specter-timer.timer-urgent {
+      color: var(--danger);
+      border-color: var(--danger);
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.6; }
+    }
+
+    /* ── Sections ──────────────────────────────────────────────────────────── */
+    section {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+    }
+
+    section h2 {
+      font-family: var(--font-ui);
+      font-size: 1.15rem;
+      color: var(--accent);
+      margin-bottom: 0.6rem;
+    }
+
+    section h3 {
+      font-family: var(--font-ui);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.4rem;
+    }
+
+    section h4 {
+      font-family: var(--font-ui);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin: 0.75rem 0 0.5rem;
+    }
+
+    .room-desc {
+      color: var(--text-main);
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+
+    /* ── Buttons ───────────────────────────────────────────────────────────── */
+    .specter-btn {
+      font-family: var(--font-ui);
+      font-size: 0.85rem;
+      padding: 0.45rem 0.9rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-card);
+      color: var(--text-main);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+
+    .specter-btn:hover:not(:disabled) {
+      background: var(--bg-hover);
+      border-color: var(--accent-dim);
+      color: var(--accent);
+    }
+
+    .specter-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-sm {
+      font-size: 0.75rem;
+      padding: 0.3rem 0.65rem;
+    }
+
+    .btn-xs {
+      font-size: 0.7rem;
+      padding: 0.2rem 0.45rem;
+    }
+
+    .btn-exit {
+      border-color: var(--accent-dim);
+      color: var(--accent);
+      display: block;
+      width: 100%;
+      margin-bottom: 0.4rem;
+      text-align: left;
+    }
+
+    .btn-exit:hover:not(:disabled) {
+      background: rgba(200, 168, 75, 0.1);
+    }
+
+    .btn-locked {
+      color: var(--text-dim);
+      display: block;
+      width: 100%;
+      margin-bottom: 0.4rem;
+      text-align: left;
+    }
+
+    .btn-map {
+      display: block;
+      width: 100%;
+      margin-bottom: 0.35rem;
+      text-align: left;
+      font-size: 0.82rem;
+    }
+
+    .btn-map-active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(200, 168, 75, 0.08);
+    }
+
+    .btn-trigger {
+      background: rgba(200, 168, 75, 0.12);
+      border-color: var(--accent-dim);
+      color: var(--accent);
+      margin-top: 0.5rem;
+    }
+
+    .btn-hint {
+      background: transparent;
+      border-color: var(--text-dim);
+      color: var(--text-muted);
+      margin-top: 0.4rem;
+      margin-left: 0.4rem;
+      font-size: 0.75rem;
+    }
+
+    .btn-hint:hover:not(:disabled) {
+      border-color: var(--accent-dim);
+      color: var(--accent);
+    }
+
+    .btn-pickup {
+      border-color: var(--success);
+      color: #5dbe7e;
+      font-size: 0.78rem;
+    }
+
+    .btn-pickup:hover:not(:disabled) {
+      background: rgba(39, 174, 96, 0.1);
+    }
+
+    .btn-action {
+      display: block;
+      width: 100%;
+      margin-bottom: 0.35rem;
+      text-align: left;
+      border-color: var(--text-dim);
+    }
+
+    .btn-combine, .btn-link {
+      border-color: var(--accent-dim);
+      color: var(--accent);
+      margin-top: 0.5rem;
+    }
+
+    .btn-accuse {
+      display: block;
+      width: 100%;
+      margin-bottom: 0.4rem;
+      border-color: var(--danger);
+      color: #e57a72;
+      text-align: left;
+    }
+
+    .btn-accuse:hover:not(:disabled) {
+      background: rgba(192, 57, 43, 0.12);
+    }
+
+    .btn-restart {
+      border-color: var(--accent);
+      color: var(--accent);
+      padding: 0.6rem 1.5rem;
+      font-size: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    /* ── Item rows ─────────────────────────────────────────────────────────── */
+    .item-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .item-row:last-child { border-bottom: none; }
+
+    .item-name {
+      font-weight: 600;
+      color: var(--text-main);
+      font-size: 0.9rem;
+      flex: 1;
+    }
+
+    .item-desc {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      flex: 2;
+    }
+
+    /* ── Inventory ─────────────────────────────────────────────────────────── */
+    /* Panels hold their size whether empty or full, so the page never jumps. */
+    .inv-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      gap: 0.5rem;
+      min-height: 118px;
+      align-content: start;
+    }
+
+    .specter-map { min-height: 215px; }
+    .specter-evidence { min-height: 260px; }
+    .specter-journal { min-height: 280px; }
+
+    .inv-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.5rem;
+      text-align: center;
+      transition: border-color 0.15s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .inv-card:hover {
+      border-color: var(--accent-dim);
+      transform: translateY(-2px);
+    }
+
+    .inv-card {
+      transition: border-color 0.15s, transform 0.15s;
+    }
+
+    .specter-btn:focus-visible, .combine-select:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
+    }
+
+    .specter-header {
+      position: sticky;
+      top: 0.75rem;
+      z-index: 20;
+      backdrop-filter: blur(6px);
+    }
+
+    .inv-icon {
+      font-size: 1.5rem;
+    }
+
+    .inv-name {
+      font-family: var(--font-ui);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-align: center;
+      word-break: break-word;
+    }
+
+    .empty-note {
+      color: var(--text-dim);
+      font-style: italic;
+      font-size: 0.85rem;
+    }
+
+    /* ── Combine / Link panels ─────────────────────────────────────────────── */
+    .combine-panel, .link-panel {
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .combine-select {
+      font-family: var(--font-ui);
+      font-size: 0.8rem;
+      background: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.3rem 0.5rem;
+      cursor: pointer;
+      flex: 1;
+      min-width: 100px;
+    }
+
+    .combine-select:focus {
+      outline: none;
+      border-color: var(--accent-dim);
+    }
+
+    .combine-plus {
+      color: var(--accent);
+      font-size: 1rem;
+      font-weight: bold;
+    }
+
+    /* ── Events ────────────────────────────────────────────────────────────── */
+    .event-row {
+      padding: 0.75rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 0.5rem;
+    }
+
+    .event-row.event-done {
+      opacity: 0.6;
+      border-color: var(--success);
+    }
+
+    .event-name {
+      font-family: var(--font-ui);
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 0.3rem;
+    }
+
+    .event-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+    }
+
+    .event-step-desc {
+      font-size: 0.85rem;
+      color: var(--text-main);
+      margin: 0.4rem 0;
+      font-style: italic;
+    }
+
+    .event-step-count {
+      font-family: var(--font-ui);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      display: block;
+      margin-top: 0.3rem;
+    }
+
+    .event-progress {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin: 0.4rem 0;
+      overflow: hidden;
+    }
+
+    .event-progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 2px;
+      transition: width 0.3s ease;
+    }
+
+    /* ── Evidence board ────────────────────────────────────────────────────── */
+    /* Evidence renders as full readable entries so the case file can be read. */
+    .clue-entries {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+      max-height: 340px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent-dim) var(--bg-panel);
+    }
+
+    .clue-entry {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent-dim);
+      border-radius: var(--radius);
+      padding: 0.5rem 0.7rem;
+    }
+
+    .clue-entry-name {
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 0.15rem;
+    }
+
+    .clue-entry-desc {
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: var(--text-main);
+    }
+
+    .deduction-list {
+      margin-bottom: 0.5rem;
+    }
+
+    .deduction-item {
+      font-size: 0.82rem;
+      color: #5dbe7e;
+      padding: 0.2rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .deduction-item:last-child { border-bottom: none; }
+
+    .accuse-note {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-style: italic;
+      margin-top: 0.5rem;
+    }
+
+    .accuse-panel {
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Journal / message log ────────────────────────────────────────────── */
+    /* Dedicated space: the journal is always this tall, empty or full. */
+    .specter-log {
+      background: var(--bg-deep);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.75rem 1rem;
+      min-height: 230px;
+      max-height: 460px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent-dim) var(--bg-deep);
+    }
+
+    .specter-log::-webkit-scrollbar { width: 8px; }
+    .specter-log::-webkit-scrollbar-track { background: var(--bg-deep); }
+    .specter-log::-webkit-scrollbar-thumb { background: var(--accent-dim); border-radius: 4px; }
+
+    .log-entry {
+      font-family: var(--font-ui);
+      font-size: 0.9rem;
+      line-height: 1.65;
+      padding: 0.35rem 0;
+      border-bottom: 1px solid var(--bg-panel);
+    }
+
+    .log-entry:last-child { border-bottom: none; font-weight: 600; }
+
+    .msg-ok   { color: #5dbe7e; }
+    .msg-fail { color: #e57a72; }
+    .msg-info { color: var(--text-muted); }
+    .msg-hint { color: #7ec8e3; }
+
+    /* ── Ending overlay ────────────────────────────────────────────────────── */
+    .ending-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(13, 15, 20, 0.95);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .ending-box {
+      background: var(--bg-panel);
+      border: 2px solid var(--accent-dim);
+      border-radius: 12px;
+      padding: 2.5rem 3rem;
+      max-width: 520px;
+      text-align: center;
+      box-shadow: 0 0 60px rgba(200, 168, 75, 0.15);
+    }
+
+    .ending-icon {
+      font-size: 3rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .ending-title {
+      font-family: var(--font-ui);
+      font-size: 1.6rem;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+
+    .ending-text {
+      font-size: 0.95rem;
+      color: var(--text-main);
+      line-height: 1.8;
+    }
+
+    /* ── Back link ─────────────────────────────────────────────────────────── */
+    #back-link {
+      display: inline-block;
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      font-family: var(--font-ui);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      text-decoration: none;
+      padding: 0.3rem 0.6rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-panel);
+      transition: color 0.15s, border-color 0.15s;
+      z-index: 10;
+    }
+
+    #back-link:hover {
+      color: var(--accent);
+      border-color: var(--accent-dim);
+    }
+
+    /* ══ DESIGN PASS ═══════════════════════════════════════════════════════ */
+    /* Typography */
+    #specter-root, .specter-log, .room-desc {
+      font-family: 'EB Garamond', Georgia, serif;
+    }
+    #specter-root h2, #specter-root h3, .specter-game-title, .room-name,
+    .specter-timer, .specter-btn, .btn-action, .inv-name, .empty-note,
+    .event-row, .clue-entry-name, .step-counter {
+      font-family: 'IBM Plex Mono', 'Trebuchet MS', monospace;
+    }
+
+    /* Theme: temple (ember gold) — default variables stay as-is; we deepen them */
+    #specter-root[data-theme="temple"] {
+      --accent: #e0b34f; --accent-dim: #9a7a33;
+    }
+    #specter-root[data-theme="temple"] section {
+      background: linear-gradient(180deg, #171a21 0%, #141720 100%);
+      box-shadow: inset 0 1px 0 rgba(224,179,79,0.07);
+    }
+
+    /* Theme: noir (blue steel) */
+    #specter-root[data-theme="noir"] {
+      --accent: #6fa8d4; --accent-dim: #3d6a94;
+      --bg-panel: #12161f; --bg-card: #171d2b; --bg-hover: #1f2739;
+      --border: #28334a;
+    }
+    #specter-root[data-theme="noir"] .specter-timer {
+      background: rgba(111,168,212,0.08);
+    }
+    #specter-root[data-theme="noir"] .clue-entry-name { color: var(--accent); }
+    #specter-root[data-theme="noir"] section {
+      box-shadow: inset 0 1px 0 rgba(111,168,212,0.07);
+    }
+
+    /* ── Room scene headers ─────────────────────────────────────────────── */
+    .room-scene {
+      position: relative;
+      height: 160px;
+      margin: -1rem -1.25rem 0.9rem;
+      overflow: hidden;
+      border-radius: var(--radius) var(--radius) 0 0;
+      border-bottom: 1px solid var(--accent-dim);
+    }
+    .room-scene svg {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      opacity: 0.55;
+    }
+    .scene-temple {
+      background:
+        radial-gradient(ellipse 60% 90% at 50% 115%, rgba(255,120,20,0.55), transparent 70%),
+        radial-gradient(ellipse 35% 60% at 50% 110%, rgba(255,190,60,0.55), transparent 60%),
+        linear-gradient(180deg, #120d08 0%, #1d130a 55%, #2a1a0c 100%);
+      color: #0a0806;
+    }
+    .scene-temple .scene-glow {
+      position: absolute; left: 15%; right: 15%; bottom: -30px; height: 90px;
+      background: radial-gradient(ellipse at 50% 100%, rgba(255,150,40,0.5), transparent 70%);
+      animation: ember-flicker 2.4s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes ember-flicker {
+      0%,100% { opacity: 0.75; transform: scaleX(1); }
+      30% { opacity: 1; transform: scaleX(1.04); }
+      55% { opacity: 0.6; transform: scaleX(0.97); }
+      80% { opacity: 0.95; }
+    }
+    .scene-noir {
+      background:
+        repeating-linear-gradient(75deg, rgba(160,200,255,0.05) 0 1px, transparent 1px 7px),
+        radial-gradient(ellipse 50% 70% at 50% -20%, rgba(140,180,230,0.22), transparent 70%),
+        linear-gradient(180deg, #0a0e16 0%, #101826 60%, #16202f 100%);
+      color: #05080d;
+      animation: rain-slide 0.9s linear infinite;
+      background-size: 60px 60px, 100% 100%, 100% 100%;
+    }
+    @keyframes rain-slide {
+      from { background-position: 0 0, 0 0, 0 0; }
+      to   { background-position: -30px 60px, 0 0, 0 0; }
+    }
+    .scene-default {
+      background: linear-gradient(180deg, #10131b, #171c2a);
+      color: #0a0c12;
+    }
+    .room-scene .room-name {
+      position: absolute; left: 1.25rem; bottom: 0.8rem; right: 1.25rem;
+      font-size: 1.45rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      text-shadow: 0 2px 10px rgba(0,0,0,0.9), 0 0 24px rgba(0,0,0,0.6);
+      font-weight: 600;
+      margin: 0;
+    }
+
+    /* Room transition */
+    .room-enter { animation: room-in 0.45s ease-out; }
+    @keyframes room-in {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Timer urgency tiers ────────────────────────────────────────────── */
+    .specter-timer.timer-warn {
+      color: #e8b04b; border-color: #b08030;
+      background: rgba(232,176,75,0.14);
+    }
+    .specter-timer.timer-urgent {
+      background: rgba(192,57,43,0.16);
+      box-shadow: 0 0 14px rgba(192,57,43,0.45);
+    }
+
+    /* ── Buttons ────────────────────────────────────────────────────────── */
+    .specter-btn {
+      border: 1px solid var(--accent-dim);
+      background: linear-gradient(180deg, #232838 0%, #1b1f2e 100%);
+      color: var(--text-main);
+      border-radius: var(--radius);
+      letter-spacing: 0.06em;
+      transition: transform 0.12s, border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    }
+    .specter-btn:hover:not(:disabled) {
+      border-color: var(--accent);
+      background: linear-gradient(180deg, #2a3044 0%, #21263a 100%);
+      box-shadow: 0 0 12px rgba(200,168,75,0.22);
+      transform: translateY(-1px);
+    }
+    #specter-root[data-theme="noir"] .specter-btn:hover:not(:disabled) {
+      box-shadow: 0 0 12px rgba(111,168,212,0.25);
+    }
+    .specter-btn:active:not(:disabled) { transform: translateY(0); }
+    .specter-btn:disabled {
+      opacity: 0.45; border-style: dashed; cursor: not-allowed;
+    }
+    .btn-action {
+      width: 100%;
+      padding: 0.6rem 1rem;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      border-color: var(--accent-dim);
+      color: var(--accent);
+    }
+
+    /* Cards */
+    .inv-card {
+      background: linear-gradient(180deg, var(--bg-card), #161a26);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .clue-entry {
+      border-left: 3px solid var(--accent);
+      background: linear-gradient(90deg, rgba(200,168,75,0.06), transparent 60%);
+    }
+    #specter-root[data-theme="noir"] .clue-entry {
+      background: linear-gradient(90deg, rgba(111,168,212,0.08), transparent 60%);
+    }
+
+    /* Headings refined */
+    #specter-root section h3 {
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.35rem;
+      margin-bottom: 0.6rem;
+    }
+    .specter-game-title {
+      font-size: 1.25rem; letter-spacing: 0.12em; text-transform: uppercase;
+      text-shadow: 0 0 18px rgba(200,168,75,0.35);
+    }
+    #specter-root[data-theme="noir"] .specter-game-title {
+      text-shadow: 0 0 18px rgba(111,168,212,0.35);
+    }
+
+    /* Journal entries a touch of texture */
+    .specter-log .log-entry.msg-fail { color: #d97b6c; }
+    .specter-log .log-entry.msg-ok   { color: #7fbf8f; }
+
+    /* Room scene images */
+    .room-scene.has-image { height: 200px; background: var(--bg-deep); }
+    .room-scene .scene-img {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; object-position: center 40%;
+    }
+    .room-scene .scene-scrim {
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(10,10,14,0.15) 0%, rgba(10,10,14,0.55) 78%, rgba(10,10,14,0.85) 100%);
+    }
+
+    /* Environmental hint highlight */
+    .hint-flash {
+      background: rgba(224,179,79,0.28);
+      box-shadow: 0 0 12px rgba(224,179,79,0.45);
+      border-bottom: 2px solid var(--accent);
+      border-radius: 3px;
+      animation: hint-glow 1.6s ease-in-out infinite;
+    }
+    #specter-root[data-theme="noir"] .hint-flash {
+      background: rgba(111,168,212,0.25);
+      box-shadow: 0 0 12px rgba(111,168,212,0.45);
+    }
+    @keyframes hint-glow {
+      0%,100% { filter: brightness(1); }
+      50% { filter: brightness(1.5); }
+    }
+    .room-scene.scene-hint {
+      box-shadow: 0 0 24px var(--accent-dim), inset 0 0 30px rgba(224,179,79,0.25);
+      border-bottom-color: var(--accent);
+    }
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="specter-loading">Loading game…</div>
+  <div id="specter-root" style="display:none"></div>
+  <a id="back-link" href="index.html">← All Games</a>
+
+  <!-- Engine scripts -->
+  <script src="assets/scenes/noir-detective-office.js"></script>
+  <script src="assets/scenes/noir-harbour-docks.js"></script>
+  <script src="assets/scenes/noir-riverside-manor.js"></script>
+  <script src="assets/scenes/noir-noir-cafe.js"></script>
+  <script src="engine.js"></script>
+  <script src="renderer.js"></script>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // ── Resolve game id from query param ─────────────────────────────────
+      // Self-contained app: content lives next to this page.
+      fetch('game.json')
+        .then(function (res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status + ' loading game.json');
+          return res.json();
+        })
+        .then(function (gameData) {
+          // Make game data accessible to the renderer's accusation panel
+          window._specterGameData = gameData;
+
+          document.title = gameData.meta.title + ' — Specter Engine';
+
+          // Show root, hide loading indicator
+          document.getElementById('specter-loading').style.display = 'none';
+          const root = document.getElementById('specter-root');
+          root.style.display = 'block';
+
+          // Initialise renderer
+          SpecterRenderer.init('specter-root');
+
+          // Load game into engine (resume saved state if available)
+          SpecterEngine.load(gameData, { resumeSaved: true });
+
+          // Start timer for timed games
+          if (gameData.meta.timed) {
+            SpecterEngine.startTimer(
+              function (remaining) {
+                SpecterRenderer.updateTimer(remaining);
+              },
+              function () {
+                // Timer expired: engine already applied onTimerEnd effects
+                SpecterRenderer.pushMessage('⌛ Time is up! The chamber resets…', 'msg-fail');
+                SpecterRenderer.render(SpecterEngine.getState());
+              }
+            );
+          }
+
+          // Initial render
+          SpecterRenderer.render(SpecterEngine.getState());
+        })
+        .catch(function (err) {
+          document.getElementById('specter-loading').textContent = '';
+          document.getElementById('specter-root').style.display = 'block';
+          document.getElementById('specter-root').innerHTML =
+            '<p class="specter-error">⚠️ Could not load game "' + gameId + '": ' + err.message + '</p>';
+        });
+    }());
+  </script>
+</body>
+</html>
