@@ -334,11 +334,18 @@
     }
 
     /* ── Inventory ─────────────────────────────────────────────────────────── */
+    /* Panels hold their size whether empty or full, so the page never jumps. */
     .inv-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
       gap: 0.5rem;
+      min-height: 118px;
+      align-content: start;
     }
+
+    .specter-map { min-height: 215px; }
+    .specter-evidence { min-height: 260px; }
+    .specter-journal { min-height: 280px; }
 
     .inv-card {
       background: var(--bg-card);
@@ -355,6 +362,23 @@
 
     .inv-card:hover {
       border-color: var(--accent-dim);
+      transform: translateY(-2px);
+    }
+
+    .inv-card {
+      transition: border-color 0.15s, transform 0.15s;
+    }
+
+    .specter-btn:focus-visible, .combine-select:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
+    }
+
+    .specter-header {
+      position: sticky;
+      top: 0.75rem;
+      z-index: 20;
+      backdrop-filter: blur(6px);
     }
 
     .inv-icon {
@@ -469,21 +493,38 @@
     }
 
     /* ── Evidence board ────────────────────────────────────────────────────── */
-    .clue-list {
+    /* Evidence renders as full readable entries so the case file can be read. */
+    .clue-entries {
       display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-      margin-bottom: 0.5rem;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+      max-height: 340px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent-dim) var(--bg-panel);
     }
 
-    .clue-chip {
-      font-family: var(--font-ui);
-      font-size: 0.72rem;
-      padding: 0.2rem 0.5rem;
+    .clue-entry {
       background: var(--bg-card);
-      border: 1px solid var(--accent-dim);
-      border-radius: 20px;
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent-dim);
+      border-radius: var(--radius);
+      padding: 0.5rem 0.7rem;
+    }
+
+    .clue-entry-name {
+      font-family: var(--font-ui);
+      font-size: 0.82rem;
+      font-weight: 600;
       color: var(--accent);
+      margin-bottom: 0.15rem;
+    }
+
+    .clue-entry-desc {
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: var(--text-main);
     }
 
     .deduction-list {
@@ -512,20 +553,29 @@
       border-top: 1px solid var(--border);
     }
 
-    /* ── Message log ───────────────────────────────────────────────────────── */
+    /* ── Journal / message log ────────────────────────────────────────────── */
+    /* Dedicated space: the journal is always this tall, empty or full. */
     .specter-log {
       background: var(--bg-deep);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 0.6rem 0.9rem;
-      max-height: 160px;
+      padding: 0.75rem 1rem;
+      min-height: 230px;
+      max-height: 460px;
       overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent-dim) var(--bg-deep);
     }
+
+    .specter-log::-webkit-scrollbar { width: 8px; }
+    .specter-log::-webkit-scrollbar-track { background: var(--bg-deep); }
+    .specter-log::-webkit-scrollbar-thumb { background: var(--accent-dim); border-radius: 4px; }
 
     .log-entry {
       font-family: var(--font-ui);
-      font-size: 0.8rem;
-      padding: 0.2rem 0;
+      font-size: 0.9rem;
+      line-height: 1.65;
+      padding: 0.35rem 0;
       border-bottom: 1px solid var(--bg-panel);
     }
 
