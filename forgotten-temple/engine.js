@@ -362,6 +362,7 @@
         id          : room.id,
         name        : room.name,
         description : room.description,
+        sceneImage  : room.sceneImage || null,
         actions     : (room.actions || []).filter(a => !a.condition || _evalCondition(a.condition)),
         allActions  : (room.actions || []),
       },
