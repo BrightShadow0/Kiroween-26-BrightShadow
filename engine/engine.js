@@ -596,7 +596,7 @@
         // Check if the action type matches any action in the current room
         const room = _byId(_gameData.rooms, _state.currentRoomId);
         const matchingAction = (room.actions || []).find(
-          a => a.id === action.actionId || a.type === action.type
+          a => action.actionId ? a.id === action.actionId : a.type === action.type
         );
         if (matchingAction) {
           result = _executeAction(matchingAction);
