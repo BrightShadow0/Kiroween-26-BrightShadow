@@ -844,6 +844,27 @@
       position: absolute; inset: 0;
       background: linear-gradient(180deg, rgba(10,10,14,0.15) 0%, rgba(10,10,14,0.55) 78%, rgba(10,10,14,0.85) 100%);
     }
+
+    /* Environmental hint highlight */
+    .hint-flash {
+      background: rgba(224,179,79,0.28);
+      box-shadow: 0 0 12px rgba(224,179,79,0.45);
+      border-bottom: 2px solid var(--accent);
+      border-radius: 3px;
+      animation: hint-glow 1.6s ease-in-out infinite;
+    }
+    #specter-root[data-theme="noir"] .hint-flash {
+      background: rgba(111,168,212,0.25);
+      box-shadow: 0 0 12px rgba(111,168,212,0.45);
+    }
+    @keyframes hint-glow {
+      0%,100% { filter: brightness(1); }
+      50% { filter: brightness(1.5); }
+    }
+    .room-scene.scene-hint {
+      box-shadow: 0 0 24px var(--accent-dim), inset 0 0 30px rgba(224,179,79,0.25);
+      border-bottom-color: var(--accent);
+    }
   </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
