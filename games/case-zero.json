@@ -21,7 +21,8 @@
       ],
       "events": [],
       "actions": [],
-      "unlockCondition": null
+      "unlockCondition": null,
+      "sceneImage": "assets/scenes/noir-detective-office.jpg"
     },
     {
       "id": "harbour-docks",
@@ -40,7 +41,8 @@
         "harbormaster-interview"
       ],
       "actions": [],
-      "unlockCondition": null
+      "unlockCondition": null,
+      "sceneImage": "assets/scenes/noir-harbour-docks.jpg"
     },
     {
       "id": "riverside-manor",
@@ -60,7 +62,8 @@
         "study-search"
       ],
       "actions": [],
-      "unlockCondition": null
+      "unlockCondition": null,
+      "sceneImage": "assets/scenes/noir-riverside-manor.jpg"
     },
     {
       "id": "noir-cafe",
@@ -78,7 +81,8 @@
         "witness-interview"
       ],
       "actions": [],
-      "unlockCondition": null
+      "unlockCondition": null,
+      "sceneImage": "assets/scenes/noir-noir-cafe.jpg"
     }
   ],
   "items": [
