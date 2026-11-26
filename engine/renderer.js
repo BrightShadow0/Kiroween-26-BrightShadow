@@ -157,7 +157,7 @@
     sceneEl.className = 'room-scene scene-' + theme + (room.sceneImage ? ' has-image' : '');
     sceneEl.innerHTML =
       (room.sceneImage
-        ? '<img class="scene-img" src="' + room.sceneImage + '" alt="" onerror="this.remove()">' +
+        ? '<img class="scene-img" src="' + ((global.SPECTER_SCENES && global.SPECTER_SCENES[room.sceneImage]) || room.sceneImage) + '" alt="" onerror="this.remove()">' +
           '<span class="scene-scrim"></span>'
         : '<svg viewBox="0 0 1024 160" preserveAspectRatio="none" aria-hidden="true">' +
           '<path d="' + scene + '" fill="currentColor"/>' +
