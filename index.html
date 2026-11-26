@@ -244,6 +244,43 @@
       letter-spacing: 0.1em;
       text-transform: uppercase;
     }
+
+    /* Hero art + byline */
+    .hero {
+      position: relative;
+      min-height: 400px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .hero-art {
+      position: absolute; inset: 0;
+      background-size: cover; background-position: center 30%;
+      opacity: 0.5;
+      z-index: 0;
+    }
+    .hero::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(13,15,20,0.35) 0%, rgba(13,15,20,0.88) 78%, var(--bg-deep) 100%);
+      z-index: 1;
+    }
+    .hero > * { position: relative; z-index: 2; }
+    .byline {
+      margin-top: 2rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.8rem;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+    }
+    .byline a {
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px solid var(--accent-dim);
+      margin: 0 0.35rem;
+    }
+    .byline a:hover { border-bottom-color: var(--accent); }
   </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -252,12 +289,18 @@
 <body>
 
   <div class="hero">
+    <div class="hero-art" id="hero-art"></div>
     <div class="hero-logo">👁️</div>
     <h1>SPECTER ENGINE</h1>
     <p class="hero-tagline">
       A puzzle-progression game engine powering two atmospheric escape experiences.
       Choose your game below — no installs, no downloads, no connection required after page load.
     </p>
+    <div class="byline">
+      BUILT BY SHELDON MENEZES ·
+      <a href="https://github.com/BrightShadow0">GITHUB</a> ·
+      <a href="https://devpost.com/sheldonpmenezes">DEVPOST</a>
+    </div>
     <p class="hero-sub">Select a game to begin</p>
   </div>
 
@@ -315,5 +358,11 @@
     <a href="https://github.com">GitHub Pages ready</a>
   </footer>
 
+  <script src="assets/hero.js"></script>
+  <script>
+    if (window.SPECTER_HERO) {
+      document.getElementById('hero-art').style.backgroundImage = 'url(' + window.SPECTER_HERO + ')';
+    }
+  </script>
 </body>
 </html>
