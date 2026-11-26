@@ -833,6 +833,17 @@
     /* Journal entries a touch of texture */
     .specter-log .log-entry.msg-fail { color: #d97b6c; }
     .specter-log .log-entry.msg-ok   { color: #7fbf8f; }
+
+    /* Room scene images */
+    .room-scene.has-image { height: 200px; background: var(--bg-deep); }
+    .room-scene .scene-img {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; object-position: center 40%;
+    }
+    .room-scene .scene-scrim {
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(10,10,14,0.15) 0%, rgba(10,10,14,0.55) 78%, rgba(10,10,14,0.85) 100%);
+    }
   </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
