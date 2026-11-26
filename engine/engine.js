@@ -522,7 +522,7 @@
         const extra = rule.effects ? _applyEffects(rule.effects) : null;
         result = {
           ok: true,
-          message: rule.message || `You combine ${itemA.name} and ${itemB.name}${resultItem ? ' → ' + resultItem.name : ''}.`
+          message: rule.message || `Combining ${itemA.name} and ${itemB.name}, you obtained ${resultItem ? resultItem.name : 'something new'}.`
         };
         if (extra) result.message += ' ' + extra;
         break;
