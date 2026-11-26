@@ -154,11 +154,14 @@
     const theme = (state.meta && state.meta.theme) || 'default';
     const scene = ROOM_SCENES[theme + ':' + room.id] || ROOM_SCENES[theme + ':default'] || ROOM_SCENES['temple:default'];
     const sceneEl = document.createElement('div');
-    sceneEl.className = 'room-scene scene-' + theme;
+    sceneEl.className = 'room-scene scene-' + theme + (room.sceneImage ? ' has-image' : '');
     sceneEl.innerHTML =
-      '<svg viewBox="0 0 1024 160" preserveAspectRatio="none" aria-hidden="true">' +
-      '<path d="' + scene + '" fill="currentColor"/>' +
-      '</svg>' +
+      (room.sceneImage
+        ? '<img class="scene-img" src="' + room.sceneImage + '" alt="" onerror="this.remove()">' +
+          '<span class="scene-scrim"></span>'
+        : '<svg viewBox="0 0 1024 160" preserveAspectRatio="none" aria-hidden="true">' +
+          '<path d="' + scene + '" fill="currentColor"/>' +
+          '</svg>') +
       '<span class="scene-glow"></span>' +
       '<h2 class="room-name">📍 ' + room.name + '</h2>';
     const section = el('section', { className: 'specter-room room-enter' },
