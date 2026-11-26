@@ -644,6 +644,16 @@
     return hint ? hint.text : null;
   }
 
+  /**
+   * Return every hint object for a puzzle, in content order. Hints are
+   * environmental: they point at something in the room (highlightText) and
+   * never state the answer outright.
+   */
+  function getHintDetails(puzzleId) {
+    if (!_gameData) return [];
+    return (_gameData.hints || []).filter(h => h.forPuzzle === puzzleId);
+  }
+
   // ─── Public API ───────────────────────────────────────────────────────────
 
   const SpecterEngine = {
@@ -651,6 +661,7 @@
     getState,
     performAction,
     getHint,
+    getHintDetails,
     saveState,
     loadSavedState,
     resetState,
