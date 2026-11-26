@@ -1,0 +1,760 @@
+{
+  "meta": {
+    "title": "The Forgotten Temple",
+    "description": "You are trapped in a cursed ancient temple. A malevolent enchantment drives an eight-minute countdown \u2014 when it expires the stone chamber resets, erasing your progress. Worse, the curse is watchful: every wrong or premature move feeds it precious seconds. Solve the mechanisms, combine the relics, and escape before the curse reclaims you.",
+    "theme": "temple",
+    "timed": true,
+    "timeLimitSeconds": 480,
+    "combineFailPenaltySeconds": 10,
+    "onTimerEnd": [
+      {
+        "type": "resetRooms",
+        "message": "The ancient curse completes its cycle. The chamber rumbles and resets\u2026"
+      }
+    ]
+  },
+  "rooms": [
+    {
+      "id": "entrance-hall",
+      "name": "Entrance Hall",
+      "description": "Dust-choked light falls through cracks in the ceiling. Carved serpents coil around every pillar, their eye sockets hollow. A sealed arch looms to the north; passages branch west toward the idol gallery and east toward the altar.",
+      "sceneImage": "assets/scenes/temple-entrance-hall.jpg",
+      "exits": [
+        "gallery-of-idols",
+        "mirror-chamber",
+        "altar-room"
+      ],
+      "items": [
+        "sun-disc",
+        "torch"
+      ],
+      "events": [
+        "serpent-lock"
+      ],
+      "actions": [],
+      "unlockCondition": null
+    },
+    {
+      "id": "gallery-of-idols",
+      "name": "Gallery of Idols",
+      "description": "Three stone idols stand on pedestals above a set of ceremonial scales: a sun idol, a moon idol and a star idol. A mural along the wall shows them placed one after another \u2014 first the sun, then the moon, then the star \u2014 with the scales balancing beneath. Faded carvings read: 'Day rises, night follows, and the stars watch over all.' A stone door to the crypt waits, sealed by the scales' judgement.",
+      "sceneImage": "assets/scenes/temple-gallery-of-idols.jpg",
+      "exits": [
+        "entrance-hall",
+        "crypt"
+      ],
+      "items": [
+        "shard-1"
+      ],
+      "events": [
+        "idol-scales"
+      ],
+      "actions": [],
+      "unlockCondition": null
+    },
+    {
+      "id": "crypt",
+      "name": "The Crypt",
+      "description": "A low stone crypt, cold despite the temple's warmth. A sarcophagus lies open and empty. Clay jars of sacred oil line one wall, and an iron hook hangs from a chain beside them.",
+      "sceneImage": "assets/scenes/temple-crypt.jpg",
+      "exits": [
+        "gallery-of-idols"
+      ],
+      "items": [
+        "iron-hook",
+        "sacred-oil",
+        "shard-2"
+      ],
+      "events": [],
+      "actions": [],
+      "unlockCondition": {
+        "type": "solvedPuzzle",
+        "id": "idol-scales"
+      }
+    },
+    {
+      "id": "altar-room",
+      "name": "Altar Room",
+      "description": "A cracked altar dominates the room, watched over by a faded wall painting: a robed figure runs toward a great golden disc with a staff outstretched, the disc seated in the staff's crown, golden liquid poured over it. Stone sconces sit dark and cold above the altar. An inscription reads: \"Light feeds the stone.\" A locked iron gate bars the way to the reliquary, its bronze keyhole shaped like a coiled serpent. Rubble blocks a passage south.",
+      "sceneImage": "assets/scenes/temple-altar-room.jpg",
+      "exits": [
+        "entrance-hall",
+        "collapsed-passage",
+        "reliquary"
+      ],
+      "items": [
+        "ancient-staff"
+      ],
+      "events": [],
+      "actions": [
+        {
+          "id": "light-sconces",
+          "type": "use",
+          "label": "Light the Sconces",
+          "description": "Touch your burning torch to the altar sconces.",
+          "condition": {
+            "type": "hasItem",
+            "id": "lit-torch"
+          },
+          "failMessage": "You need a burning torch to light the sconces.",
+          "penaltySeconds": 15,
+          "effects": [
+            {
+              "type": "setFlag",
+              "name": "altar-lit",
+              "value": true,
+              "message": "The sconces blaze to life. The altar stone drinks the light and hums \u2014 somewhere, a lock stirs."
+            }
+          ],
+          "successMessage": "Golden light fills the altar room."
+        },
+        {
+          "id": "unlock-gate",
+          "type": "use",
+          "label": "Unlock the Iron Gate",
+          "description": "Turn the serpent-carved bronze key in the gate's lock.",
+          "condition": {
+            "type": "hasItem",
+            "id": "bronze-key"
+          },
+          "failMessage": "The gate is locked tight. Its bronze key must lie beyond the northern arch.",
+          "penaltySeconds": 15,
+          "effects": [
+            {
+              "type": "setFlag",
+              "name": "reliquary-gate-open",
+              "value": true,
+              "message": "The bronze key turns with a satisfying clunk. The iron gate swings open."
+            }
+          ],
+          "successMessage": "The way to the reliquary is open."
+        }
+      ],
+      "unlockCondition": null
+    },
+    {
+      "id": "collapsed-passage",
+      "name": "Collapsed Passage",
+      "description": "The ceiling gave way here long ago. Fallen blocks choke the floor, and a dark chasm splits the passage in two. On the far ledge, something pale and folded lies in the dust.",
+      "sceneImage": "assets/scenes/temple-collapsed-passage.jpg",
+      "exits": [
+        "altar-room"
+      ],
+      "items": [
+        "shard-3"
+      ],
+      "events": [],
+      "actions": [
+        {
+          "id": "cross-chasm",
+          "type": "use",
+          "label": "Cross the Chasm",
+          "description": "Swing across the chasm on a secured line.",
+          "condition": {
+            "type": "hasItem",
+            "id": "climbing-line"
+          },
+          "failMessage": "The chasm is too wide to jump, and the rubble will not hold you. You need a rope secured to a hook.",
+          "penaltySeconds": 20,
+          "effects": [
+            {
+              "type": "setFlag",
+              "name": "chasm-crossed",
+              "value": true,
+              "message": "You hook the line around a fallen column and swing across. On the far ledge you find a folded cleaning cloth \u2014 the temple keepers' own."
+            },
+            {
+              "type": "giveItem",
+              "itemId": "cleaning-cloth"
+            }
+          ],
+          "successMessage": "You cross the chasm and return with what lay beyond."
+        }
+      ],
+      "unlockCondition": null
+    },
+    {
+      "id": "mirror-chamber",
+      "name": "Chamber of Mirrors",
+      "description": "Three bronze mirrors stand on stone pedestals, filmed with centuries of dust. A carved frieze runs the length of the wall: a figure cleans a mirror with a cloth, then turns the left mirror, then the centre, then the right, and a beam of light leaps from mirror to mirror into a carved eye \u2014 the temple's solar conduit. The mirrors will never catch the beam while they are blind with grime.",
+      "sceneImage": "assets/scenes/temple-mirror-chamber.jpg",
+      "exits": [
+        "entrance-hall"
+      ],
+      "items": [
+        "bronze-key"
+      ],
+      "events": [
+        "mirror-alignment"
+      ],
+      "actions": [],
+      "unlockCondition": {
+        "type": "solvedPuzzle",
+        "id": "serpent-lock"
+      }
+    },
+    {
+      "id": "reliquary",
+      "name": "The Reliquary",
+      "description": "A circular chamber. At its centre stands a stone pedestal with a star-shaped socket, and above it a dark crystal lens \u2014 dead, until fed by the temple's solar conduit. The exit, a massive iron door engraved with solar symbols, waits beyond. This is the way out.",
+      "sceneImage": "assets/scenes/temple-reliquary.jpg",
+      "exits": [
+        "altar-room"
+      ],
+      "items": [],
+      "events": [
+        "final-mechanism"
+      ],
+      "actions": [],
+      "unlockCondition": {
+        "type": "allOf",
+        "conditions": [
+          {
+            "type": "flag",
+            "name": "altar-lit"
+          },
+          {
+            "type": "flag",
+            "name": "reliquary-gate-open"
+          }
+        ]
+      }
+    }
+  ],
+  "items": [
+    {
+      "id": "sun-disc",
+      "name": "Sun Disc",
+      "icon": "\u2600\ufe0f",
+      "description": "A flat disc of hammered gold, etched with radiating lines. It fits in the palm of your hand.",
+      "examineText": "One face bears the symbol of a rising sun; the other has a slot that might accept a staff fitting."
+    },
+    {
+      "id": "torch",
+      "name": "Unlit Torch",
+      "icon": "\ud83d\udd26",
+      "description": "A pitch-soaked torch. It needs a flame to be useful.",
+      "examineText": "Standard temple torch \u2014 pitch-sealed reed wrapped in cloth. It will burn for a good while once lit.",
+      "combinesWith": {
+        "flint-shard": {
+          "result": "lit-torch",
+          "message": "Combining the unlit torch and the flint shard, you obtained a lit torch. It catches with a warm crack and throws long shadows across the stone."
+        }
+      }
+    },
+    {
+      "id": "flint-shard",
+      "name": "Flint Shard",
+      "icon": "\ud83e\udea8",
+      "description": "A sharp chip of dark flint, useful for striking sparks.",
+      "examineText": "Knapped to a fine edge. Good for making fire."
+    },
+    {
+      "id": "lit-torch",
+      "name": "Lit Torch",
+      "icon": "\ud83d\udd25",
+      "description": "A blazing torch. It lights your way and ignites whatever needs burning.",
+      "examineText": "The flame burns steadily, casting dancing shadows across carved stone walls.",
+      "useText": "You hold the torch aloft \u2014 it illuminates the area but needs a specific target to be useful."
+    },
+    {
+      "id": "rope",
+      "name": "Hempen Rope",
+      "icon": "\ud83e\udea2",
+      "description": "A coil of temple rope, dry but still strong.",
+      "examineText": "Long enough to span a chasm, if only it were anchored to something.",
+      "combinesWith": {
+        "iron-hook": {
+          "result": "climbing-line",
+          "message": "Combining the hempen rope and the iron hook, you obtained a climbing line. The knots cinch tight \u2014 built for one hard swing."
+        }
+      }
+    },
+    {
+      "id": "iron-hook",
+      "name": "Iron Hook",
+      "icon": "\ud83e\ude9d",
+      "description": "A heavy iron hook from the crypt wall.",
+      "examineText": "Forged to bear weight. It wants a rope."
+    },
+    {
+      "id": "climbing-line",
+      "name": "Climbing Line",
+      "icon": "\ud83e\uddd7",
+      "description": "Rope and hook, knotted together. Built for one hard swing.",
+      "examineText": "The knots will hold. Somewhere a gap is waiting to be crossed."
+    },
+    {
+      "id": "sacred-oil",
+      "name": "Sacred Oil",
+      "icon": "\ud83c\udffa",
+      "description": "A clay jar of golden oil, still fragrant after centuries.",
+      "examineText": "Anointing oil for the temple's holiest relics.",
+      "combinesWith": {
+        "charged-staff": {
+          "result": "anointed-staff",
+          "message": "Combining the sacred oil and the charged staff, you obtained an anointed staff. Golden oil soaks into the carvings and they blaze to life."
+        }
+      }
+    },
+    {
+      "id": "cleaning-cloth",
+      "name": "Cleaning Cloth",
+      "icon": "\ud83e\uddfb",
+      "description": "A folded cloth the temple keepers used to polish the sacred bronzework.",
+      "examineText": "Stiff with age, but it will still lift dust from bronze."
+    },
+    {
+      "id": "ancient-staff",
+      "name": "Ancient Staff",
+      "icon": "\ud83e\ude84",
+      "description": "A carved wooden staff banded with tarnished copper. One end has a hollow socket.",
+      "examineText": "The socket at the top is exactly the right size to seat a disc or medallion.",
+      "combinesWith": {
+        "sun-disc": {
+          "result": "charged-staff",
+          "message": "Combining the ancient staff and the sun disc, you obtained a charged staff. The disc clicks home in the socket and the copper bands glow faintly."
+        }
+      }
+    },
+    {
+      "id": "charged-staff",
+      "name": "Charged Staff",
+      "icon": "\u2728",
+      "description": "The ancient staff crowned with the sun disc. It pulses with restrained energy.",
+      "examineText": "The combined relic hums in your grip, but its carvings are dry. It needs anointing before the pedestal will accept it."
+    },
+    {
+      "id": "anointed-staff",
+      "name": "Anointed Staff",
+      "icon": "\ud83c\udf1f",
+      "description": "The sun-crowned staff, glistening with sacred oil. It radiates readiness.",
+      "examineText": "Solar symbols across the disc burn with a steady golden light. This is what the star-shaped socket was carved for."
+    },
+    {
+      "id": "bronze-key",
+      "name": "Bronze Key",
+      "icon": "\ud83d\udddd\ufe0f",
+      "description": "A heavy bronze key, its bow carved like a coiled serpent.",
+      "examineText": "It matches the serpent-shaped keyhole on the iron gate in the altar room."
+    },
+    {
+      "id": "shard-1",
+      "name": "Sun Shard",
+      "icon": "\ud83d\udd06",
+      "description": "A relic shard of the temple, one of three. Worthless for the escape \u2014 priceless to a collector.",
+      "examineText": "Warm to the touch, as if it remembers the sun."
+    },
+    {
+      "id": "shard-2",
+      "name": "Moon Shard",
+      "icon": "\ud83c\udf19",
+      "description": "A relic shard of the temple, one of three. Worthless for the escape \u2014 priceless to a collector.",
+      "examineText": "Warm to the touch, as if it remembers the sun."
+    },
+    {
+      "id": "shard-3",
+      "name": "Star Shard",
+      "icon": "\u2b50",
+      "description": "A relic shard of the temple, one of three. Worthless for the escape \u2014 priceless to a collector.",
+      "examineText": "Warm to the touch, as if it remembers the sun."
+    }
+  ],
+  "clues": [],
+  "hints": [
+    {
+      "id": "hint-serpent-lock",
+      "forPuzzle": "serpent-lock",
+      "text": "The serpent lock responds to light. Search the pillars for something to strike a spark, then combine it with the torch in your inventory before you touch the mechanism.",
+      "highlightText": "Carved serpents coil around every pillar, their eye sockets hollow"
+    },
+    {
+      "id": "hint-idol-scales",
+      "forPuzzle": "idol-scales",
+      "text": "The carvings give the order: day rises, night follows, and the stars watch over all. Sun, then moon, then star.",
+      "highlightText": "first the sun, then the moon, then the star"
+    },
+    {
+      "id": "hint-collapsed-passage",
+      "forPuzzle": "idol-scales",
+      "text": "The chasm in the collapsed passage needs a rope with a hook. One lies with the idols' reward, the other sleeps in the crypt.",
+      "highlightText": "a dark chasm splits the passage in two"
+    },
+    {
+      "id": "hint-mirror-alignment",
+      "forPuzzle": "mirror-alignment",
+      "text": "The mirrors are blind with dust. A cleaning cloth lies beyond the chasm in the collapsed passage. Once they gleam, follow the carvings: left, then centre, then right \u2014 with a burning torch in hand.",
+      "highlightText": "a figure cleans a mirror with a cloth, then turns the left mirror, then the centre, then the right"
+    },
+    {
+      "id": "hint-reliquary-gate",
+      "forPuzzle": "final-mechanism",
+      "text": "The reliquary only opens to light and bronze: light the altar sconces with your torch, and find the serpent-carved key beyond the northern arch.",
+      "highlightText": "bronze keyhole shaped like a coiled serpent"
+    },
+    {
+      "id": "hint-final-mechanism",
+      "forPuzzle": "final-mechanism",
+      "text": "The star-shaped socket accepts only an anointed relic: combine the sun disc with the ancient staff, then anoint it with sacred oil from the crypt. The solar mechanism is dead until the mirrors feed it.",
+      "highlightText": "a star-shaped socket"
+    }
+  ],
+  "events": [
+    {
+      "id": "serpent-lock",
+      "name": "Serpent Lock",
+      "description": "A stone panel carved with two coiled serpents blocks the northern arch. Their eyes are hollow \u2014 sockets waiting for flame.",
+      "steps": [
+        {
+          "id": "serpent-step-1",
+          "description": "Retrieve the flint shard from the base of the east pillar.",
+          "actionLabel": "Search Pillar Base",
+          "effects": [
+            {
+              "type": "giveItem",
+              "itemId": "flint-shard",
+              "message": "You pry a flint shard from the mortar at the pillar's base."
+            }
+          ]
+        },
+        {
+          "id": "serpent-step-2",
+          "description": "Hold a burning torch to the serpents' eye sockets to trigger the mechanism.",
+          "actionLabel": "Illuminate the Serpents",
+          "action": {
+            "type": "use",
+            "label": "Illuminate the Serpents",
+            "condition": {
+              "type": "hasItem",
+              "id": "lit-torch"
+            },
+            "failMessage": "The hollow eyes stare back, blind. You need a burning torch \u2014 combine something that sparks with your unlit torch.",
+            "penaltySeconds": 25,
+            "effects": []
+          },
+          "effects": [
+            {
+              "type": "setFlag",
+              "name": "serpent-lock-open",
+              "value": true
+            }
+          ]
+        }
+      ],
+      "onComplete": [
+        {
+          "type": "setFlag",
+          "name": "north-arch-open",
+          "value": true,
+          "message": "The serpents' eyes ignite with golden fire. With a grinding rumble the stone arch slides open, revealing the mirror chamber beyond."
+        }
+      ]
+    },
+    {
+      "id": "idol-scales",
+      "name": "Scales of the Three Idols",
+      "description": "The scales must be balanced in the order the carvings command: the sun first, the moon after, the stars last.",
+      "steps": [
+        {
+          "id": "idol-step-1",
+          "description": "Set the sun idol on the scales.",
+          "actionLabel": "Set Sun Idol",
+          "effects": [
+            {
+              "type": "setFlag",
+              "name": "idol-sun-set",
+              "value": true,
+              "message": "The sun idol settles onto the left pan. A low chime rolls through the gallery."
+            }
+          ]
+        },
+        {
+          "id": "idol-step-2",
+          "description": "Set the moon idol on the scales.",
+          "actionLabel": "Set Moon Idol",
+          "action": {
+            "type": "trigger",
+            "label": "Set Moon Idol",
+            "condition": {
+              "type": "flag",
+              "name": "idol-sun-set"
+            },
+            "failMessage": "The scales reject the idol \u2014 the carvings say the day rises first.",
+            "penaltySeconds": 15,
+            "effects": []
+          },
+          "effects": [
+            {
+              "type": "setFlag",
+              "name": "idol-moon-set",
+              "value": true,
+              "message": "The moon idol settles beside the sun. The scales level with a second chime."
+            }
+          ]
+        },
+        {
+          "id": "idol-step-3",
+          "description": "Set the star idol on the scales.",
+          "actionLabel": "Set Star Idol",
+          "action": {
+            "type": "trigger",
+            "label": "Set Star Idol",
+            "condition": {
+              "type": "flag",
+              "name": "idol-moon-set"
+            },
+            "failMessage": "The scales shudder and refuse. The stars watch over all \u2014 they come last.",
+            "penaltySeconds": 15,
+            "effects": []
+          },
+          "effects": [
+            {
+              "type": "setFlag",
+              "name": "idol-star-set",
+              "value": true
+            }
+          ]
+        }
+      ],
+      "onComplete": [
+        {
+          "type": "giveItem",
+          "itemId": "rope",
+          "message": "The scales balance perfectly. A compartment beneath them springs open, revealing a coil of hempen rope."
+        },
+        {
+          "type": "setFlag",
+          "name": "crypt-unlocked",
+          "value": true,
+          "message": "Stone grinds on stone \u2014 the crypt door swings open."
+        }
+      ]
+    },
+    {
+      "id": "mirror-alignment",
+      "name": "Mirror Alignment",
+      "description": "Three bronze mirrors must be cleaned and then rotated in the carved sequence \u2014 left, then centre, then right \u2014 to feed the temple's solar conduit.",
+      "steps": [
+        {
+          "id": "mirror-step-0",
+          "description": "Clean the centuries of grime from the bronze mirrors.",
+          "actionLabel": "Clean the Mirrors",
+          "action": {
+            "type": "use",
+            "label": "Clean the Mirrors",
+            "condition": {
+              "type": "hasItem",
+              "id": "cleaning-cloth"
+            },
+            "failMessage": "You smear the dust with your sleeve and achieve nothing. The keepers' cleaning cloth must still be somewhere in the temple.",
+            "penaltySeconds": 20,
+            "effects": []
+          },
+          "effects": [
+            {
+              "type": "setFlag",
+              "name": "mirrors-cleaned",
+              "value": true,
+              "message": "The cloth lifts centuries of grime. The mirrors gleam like still water."
+            }
+          ]
+        },
+        {
+          "id": "mirror-step-1",
+          "description": "Rotate the left mirror to catch the light.",
+          "actionLabel": "Rotate Left Mirror",
+          "action": {
+            "type": "use",
+            "label": "Rotate Left Mirror",
+            "condition": {
+              "type": "allOf",
+              "conditions": [
+                {
+                  "type": "hasItem",
+                  "id": "lit-torch"
+                },
+                {
+                  "type": "flag",
+                  "name": "mirrors-cleaned"
+                }
+              ]
+            },
+            "failMessage": "The mirror turns but catches nothing \u2014 you need a burning torch and clean mirrors before any light can travel.",
+            "penaltySeconds": 20,
+            "effects": []
+          },
+          "effects": [
+            {
+              "type": "setFlag",
+              "name": "mirror-left-set",
+              "value": true,
+              "message": "The left mirror swings with a metallic groan. A thin beam of light appears."
+            }
+          ]
+        },
+        {
+          "id": "mirror-step-2",
+          "description": "Rotate the centre mirror to redirect the beam upward.",
+          "actionLabel": "Rotate Centre Mirror",
+          "action": {
+            "type": "trigger",
+            "label": "Rotate Centre Mirror",
+            "condition": {
+              "type": "flag",
+              "name": "mirror-left-set"
+            },
+            "failMessage": "The centre mirror grinds against dead gearing \u2014 the carvings show it must follow the left one.",
+            "penaltySeconds": 20,
+            "effects": []
+          },
+          "effects": [
+            {
+              "type": "setFlag",
+              "name": "mirror-centre-set",
+              "value": true,
+              "message": "The centre mirror catches the beam and bends it sharply upward."
+            }
+          ]
+        },
+        {
+          "id": "mirror-step-3",
+          "description": "Rotate the right mirror to aim the converged beam at the carved eye.",
+          "actionLabel": "Rotate Right Mirror",
+          "action": {
+            "type": "trigger",
+            "label": "Rotate Right Mirror",
+            "condition": {
+              "type": "flag",
+              "name": "mirror-centre-set"
+            },
+            "failMessage": "The right mirror will not budge \u2014 the beam has not reached it yet. The carvings show left, then centre, then right.",
+            "penaltySeconds": 20,
+            "effects": []
+          },
+          "effects": [
+            {
+              "type": "setFlag",
+              "name": "mirror-right-set",
+              "value": true
+            }
+          ]
+        }
+      ],
+      "onComplete": [
+        {
+          "type": "setFlag",
+          "name": "solar-conduit-fed",
+          "value": true,
+          "message": "Three beams merge into one blazing column and spear into the carved eye. Deep in the temple, the solar conduit wakes with a low hum."
+        }
+      ]
+    },
+    {
+      "id": "final-mechanism",
+      "name": "Star Pedestal",
+      "description": "A stone pedestal with a star-shaped socket. Carved text reads: 'The anointed sun-bearer opens the solar door, but only when the heavens feed it.'",
+      "steps": [
+        {
+          "id": "pedestal-step-1",
+          "description": "Place the anointed staff into the star-shaped socket.",
+          "actionLabel": "Insert Anointed Staff",
+          "action": {
+            "type": "use",
+            "label": "Insert Anointed Staff",
+            "condition": {
+              "type": "hasItem",
+              "id": "anointed-staff"
+            },
+            "failMessage": "The socket rejects your empty hand. It demands the sun disc mounted on the ancient staff, anointed with sacred oil.",
+            "penaltySeconds": 25,
+            "effects": []
+          },
+          "effects": [
+            {
+              "type": "removeItem",
+              "itemId": "anointed-staff"
+            },
+            {
+              "type": "setFlag",
+              "name": "staff-inserted",
+              "value": true,
+              "message": "The anointed staff slides into the socket with a resonant chime. The floor trembles."
+            }
+          ]
+        },
+        {
+          "id": "pedestal-step-2",
+          "description": "Activate the solar mechanism to unseal the iron door.",
+          "actionLabel": "Activate Solar Mechanism",
+          "action": {
+            "type": "trigger",
+            "label": "Activate Solar Mechanism",
+            "condition": {
+              "type": "allOf",
+              "conditions": [
+                {
+                  "type": "flag",
+                  "name": "staff-inserted"
+                },
+                {
+                  "type": "solvedPuzzle",
+                  "id": "mirror-alignment"
+                }
+              ]
+            },
+            "failMessage": "The crystal lens above the pedestal stays dark \u2014 the mechanism is starved of light. Align the mirrors in the northern chamber first.",
+            "penaltySeconds": 25,
+            "effects": []
+          },
+          "effects": [
+            {
+              "type": "setFlag",
+              "name": "exit-door-open",
+              "value": true,
+              "message": "Light pours down from the crystal lens into the staff. Solar symbols along the iron door ignite one by one, and the door grinds open."
+            }
+          ]
+        },
+        {
+          "id": "pedestal-step-3",
+          "description": "Push open the iron door and walk free.",
+          "actionLabel": "Escape Through the Door",
+          "action": {
+            "type": "trigger",
+            "label": "Escape Through the Door",
+            "condition": {
+              "type": "flag",
+              "name": "exit-door-open"
+            },
+            "failMessage": "The iron door is sealed. The mechanism has not released it.",
+            "penaltySeconds": 25,
+            "effects": []
+          },
+          "effects": [
+            {
+              "type": "triggerEnding",
+              "endingId": "escape-victory"
+            }
+          ]
+        }
+      ],
+      "onComplete": []
+    }
+  ],
+  "endings": [
+    {
+      "id": "escape-victory",
+      "title": "Escaped!",
+      "text": "You burst through the iron door into blinding daylight. Behind you the temple groans as its curse, deprived of a victim, collapses inward. You made it. The forgotten temple is forgotten once more \u2014 this time, without you inside it.",
+      "isWin": true,
+      "icon": "\ud83c\udfdb\ufe0f"
+    },
+    {
+      "id": "timer-doom",
+      "title": "The Curse Resets",
+      "text": "The countdown reaches zero. The stone floor dissolves beneath your feet, the torchlight snuffs out, and when the light returns everything is as it was. The temple begins again \u2014 and so must you.",
+      "isWin": false,
+      "icon": "\u23f3"
+    }
+  ]
+}
