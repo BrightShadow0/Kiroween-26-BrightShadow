@@ -268,10 +268,30 @@
         );
         eventDiv.appendChild(triggerBtn);
 
-        // Hint button
-        const hint = global.SpecterEngine.getHint(event.id);
-        if (hint) {
-          eventDiv.appendChild(btn('💡 Hint', () => pushMessage('Hint: ' + hint, 'msg-hint') || renderFull(global.SpecterEngine.getState()), 'btn-hint'));
+        // Hint button: highlights the environmental clue, never reveals the answer
+        const hints = (global.SpecterEngine.getHintDetails && global.SpecterEngine.getHintDetails(event.id)) || [];
+        if (hints.length > 0 || global.SpecterEngine.getHint(event.id)) {
+          let hintIdx = 0;
+          eventDiv.appendChild(btn('💡 Hint', () => {
+            const h = hints.length > 0 ? hints[hintIdx++ % hints.length] : { text: global.SpecterEngine.getHint(event.id) };
+            let highlighted = false;
+            if (h.highlightText) {
+              const desc = document.querySelector('.room-desc');
+              if (desc && desc.textContent.includes(h.highlightText)) {
+                const esc = s2 => s2.replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+                desc.innerHTML = esc(desc.textContent).replace(esc(h.highlightText), '<span class="hint-flash">' + esc(h.highlightText) + '</span>');
+                const scene = document.querySelector('.room-scene');
+                if (scene) scene.classList.add('scene-hint');
+                highlighted = true;
+              }
+            }
+            if (highlighted) {
+              pushMessage('You stop and study your surroundings more carefully…', 'msg-hint');
+            } else if (h.text) {
+              pushMessage('Hint: ' + h.text, 'msg-hint');
+              renderFull(global.SpecterEngine.getState());
+            }
+          }, 'btn-hint'));
         }
       }
       section.appendChild(eventDiv);
