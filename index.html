@@ -201,7 +201,53 @@
     }
 
     footer a:hover { color: var(--accent); }
+
+    /* ══ DESIGN PASS ═══════════════════════════════════════════════════════ */
+    body {
+      font-family: 'EB Garamond', Georgia, serif;
+    }
+    h1, h2, h3, .game-card-title, .tag, footer {
+      font-family: 'IBM Plex Mono', 'Trebuchet MS', monospace;
+    }
+    .hero {
+      background:
+        radial-gradient(ellipse 70% 55% at 50% -10%, rgba(200,168,75,0.14), transparent 65%),
+        radial-gradient(ellipse 40% 30% at 50% 0%, rgba(255,150,40,0.08), transparent 60%);
+      padding: 6rem 1.5rem 3.5rem;
+    }
+    .hero h1 {
+      font-size: 3rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      text-shadow: 0 0 30px rgba(200,168,75,0.35), 0 2px 12px rgba(0,0,0,0.8);
+    }
+    .hero-tagline { font-size: 1.1rem; }
+    .hero-sub { letter-spacing: 0.22em; }
+    .game-card {
+      box-shadow: 0 4px 18px rgba(0,0,0,0.35);
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    }
+    .game-card:hover {
+      box-shadow: 0 8px 28px rgba(0,0,0,0.5), 0 0 18px rgba(200,168,75,0.18);
+    }
+    .game-card-banner.banner-temple {
+      background:
+        radial-gradient(ellipse 60% 90% at 50% 115%, rgba(255,120,20,0.5), transparent 70%),
+        linear-gradient(180deg, #120d08 0%, #2a1a0c 100%);
+    }
+    .game-card-banner.banner-noir, .game-card-banner.banner-detective {
+      background:
+        repeating-linear-gradient(75deg, rgba(160,200,255,0.06) 0 1px, transparent 1px 7px),
+        linear-gradient(180deg, #0a0e16 0%, #16202f 100%);
+    }
+    .game-card-title {
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
   </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
