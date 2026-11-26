@@ -248,17 +248,20 @@
     {
       "id": "hint-harbormaster-interview",
       "forPuzzle": "harbormaster-interview",
-      "text": "Ask the dock workers about unusual activity on the night in question. The shipping manifest is a good starting point for the conversation."
+      "text": "Ask the dock workers about unusual activity on the night in question. The shipping manifest is a good starting point for the conversation.",
+      "highlightText": "The harbormaster's shack sits at the far end of the pier"
     },
     {
       "id": "hint-study-search",
       "forPuzzle": "study-search",
-      "text": "The study has three areas to investigate: the desk, the floor near the window, and the loose floorboard under the rug."
+      "text": "The study has three areas to investigate: the desk, the floor near the window, and the loose floorboard under the rug.",
+      "highlightText": "an overturned desk, a smashed decanter"
     },
     {
       "id": "hint-witness-interview",
       "forPuzzle": "witness-interview",
-      "text": "Order something \u2014 the barista talks more freely if you're a paying customer. Ask about the night of the murder."
+      "text": "Order something \u2014 the barista talks more freely if you're a paying customer. Ask about the night of the murder.",
+      "highlightText": "including the people you're looking for"
     }
   ],
   "events": [
