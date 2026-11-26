@@ -485,7 +485,7 @@
     renderItems(state, leftCol);
     renderEvents(state, leftCol);
     renderRoomActions(state, leftCol);
-    renderMessages(state, leftCol); // messages live here — after content
+    renderMessages(leftCol); // messages live here — after content
 
     // Right column: inventory + evidence board (detective games) / map
     const rightCol = el('div', { className: 'col-side' });
