@@ -193,8 +193,7 @@
         action.label,
         () => {
           // For actions in the room, we dispatch them directly with their type
-          const act = Object.assign({}, action);
-          dispatch(act);
+          dispatch({ type: 'roomAction', actionId: action.id });
         },
         'btn-action'
       );
