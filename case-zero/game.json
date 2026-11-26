@@ -10,7 +10,7 @@
     {
       "id": "detective-office",
       "name": "Detective's Office",
-      "description": "Your cluttered office. Rain hammers the window. A corkboard on the wall holds everything you have so far. The phone rings twice then stops. Time to work.",
+      "description": "Rain hammers the window and the radiator ticks like a nervous clock. A corkboard on the wall holds everything you have so far — photographs, strings, a name circled three times. The phone rang twice at midnight then went silent, the way guilty men always do. The case file on your desk is the only place left to start.",
       "exits": [
         "harbour-docks",
         "riverside-manor",
@@ -19,7 +19,9 @@
       "items": [
         "case-file"
       ],
-      "events": [],
+      "events": [
+        "office-start"
+      ],
       "actions": [],
       "unlockCondition": null,
       "sceneImage": "assets/scenes/noir-detective-office.jpg"
@@ -27,7 +29,7 @@
     {
       "id": "harbour-docks",
       "name": "Harbour Docks",
-      "description": "Salt-stiff ropes and the smell of diesel. Shipping crates stacked to the sky. The harbormaster's shack sits at the far end of the pier, padlocked but accessible with the right persuasion.",
+      "description": "The air tastes of brine and old diesel, and the fog swallows the lamp posts whole. Shipping crates tower on either side, stencilled with ports you've never seen. The harbormaster's shack sits at the far end of the pier, its padlock rusted but new, the kind of contradiction that keeps a detective awake.",
       "exits": [
         "detective-office",
         "riverside-manor",
@@ -47,7 +49,7 @@
     {
       "id": "riverside-manor",
       "name": "Riverside Manor",
-      "description": "The victim's grand home, now a crime scene. Yellow tape across the front door, but the side gate is open. Inside: an overturned desk, a smashed decanter, and the faint scent of expensive cologne.",
+      "description": "Yellow tape crosses the front door but the side gate hangs open — someone left in a hurry. The study is a ruin: an overturned desk, a smashed decanter, and expensive cologne still clinging to the curtains like a ghost. Rain streaks the tall window in long silver lines. Whatever happened here happened fast, and whoever did it knew exactly where to look.",
       "exits": [
         "detective-office",
         "harbour-docks",
@@ -67,8 +69,8 @@
     },
     {
       "id": "noir-cafe",
-      "name": "The Noir Caf\u00e9",
-      "description": "A cramped corner caf\u00e9 that never closes. Jazz bleeds through the walls. Everyone in this city has sat in one of these booths at some point \u2014 including the people you're looking for.",
+      "name": "The Noir Café",
+      "description": "The Noir Café never closes and never apologises for it. Jazz seeps through the walls at a volume that swallows secrets whole. Every booth has heard confessions; the counter has soaked up alibis for forty years. Everyone in this city has sat in one of these booths at some point — including the people you're looking for.",
       "exits": [
         "detective-office",
         "harbour-docks",
@@ -89,64 +91,64 @@
     {
       "id": "case-file",
       "name": "Case File",
-      "icon": "\ud83d\udcc1",
+      "icon": "📁",
       "description": "The initial police report. Victim: Victor Hale, financier. Cause of death: blunt force trauma. Time of death: between 10 PM and midnight.",
       "examineText": "Victor Hale was found dead in his locked study at midnight by his housekeeper. No signs of forced entry. Three people had keys: his business partner Nadia Voss, his estranged nephew Roland Hale, and the household manager Mr. Ash."
     },
     {
       "id": "shipping-manifest",
       "name": "Shipping Manifest",
-      "icon": "\ud83d\udccb",
+      "icon": "📋",
       "description": "A dock manifest with certain line items circled in red ink.",
-      "examineText": "Several large crates marked 'glassware' were loaded onto a vessel registered to Voss & Hale Imports on the night of the murder. The loading time logged is 11:30 PM \u2014 but the crates are not in the import registry."
+      "examineText": "Several large crates marked 'glassware' were loaded onto a vessel registered to Voss & Hale Imports on the night of the murder. The loading time logged is 11:30 PM — but the crates are not in the import registry."
     },
     {
       "id": "broken-watch",
       "name": "Broken Pocket Watch",
-      "icon": "\u231a",
+      "icon": "⌚",
       "description": "A gold pocket watch, stopped at 10:47 PM, found wedged between dock planks.",
-      "examineText": "The initials 'R.H.' are engraved on the case. Roland Hale's watch \u2014 here, at the docks, at 10:47 PM. The night of the murder."
+      "examineText": "The initials 'R.H.' are engraved on the case. Roland Hale's watch — here, at the docks, at 10:47 PM. The night of the murder."
     },
     {
       "id": "monogrammed-cufflink",
       "name": "Monogrammed Cufflink",
-      "icon": "\ud83d\udc8e",
+      "icon": "💎",
       "description": "A single silver cufflink engraved with the letter V, found near the study window.",
-      "examineText": "The monogram matches Nadia Voss's personal stationary style. It was found on the study floor \u2014 placing her inside the room on the night of the murder."
+      "examineText": "The monogram matches Nadia Voss's personal stationary style. It was found on the study floor — placing her inside the room on the night of the murder."
     },
     {
       "id": "threatening-letter",
       "name": "Threatening Letter",
-      "icon": "\u2709\ufe0f",
+      "icon": "✉️",
       "description": "An unsigned letter found in the victim's desk. The handwriting is deliberate and angry.",
       "examineText": "The letter reads: 'You cannot keep taking what is not yours. Return what belongs to the family or I will take it back myself.' Forensics confirmed the paper stock is the same batch as a notepad found in Roland Hale's flat."
     },
     {
       "id": "ledger-page",
       "name": "Torn Ledger Page",
-      "icon": "\ud83d\udcc4",
+      "icon": "📄",
       "description": "A single page torn from a financial ledger, hidden beneath a loose floorboard.",
       "examineText": "The page documents a secret account under a false name, funnelling money from Hale's estate to an offshore account. The account access codes are written in Nadia Voss's handwriting."
     },
     {
       "id": "matchbook",
-      "name": "Caf\u00e9 Matchbook",
-      "icon": "\ud83d\udd25",
-      "description": "A matchbook from this very caf\u00e9, with a time and table number scrawled inside: '10 PM, table 4'.",
+      "name": "Café Matchbook",
+      "icon": "🔥",
+      "description": "A matchbook from this very café, with a time and table number scrawled inside: '10 PM, table 4'.",
       "examineText": "A barista confirms two people met at table 4 at 10 PM on the night of the murder: a tall woman in a grey coat matching Nadia Voss's description, and an older man matching Mr. Ash. They argued in hushed voices for thirty minutes then left separately."
     },
     {
       "id": "dock-testimony",
       "name": "Dock Testimony",
-      "icon": "\ud83d\udcdd",
+      "icon": "📝",
       "description": "Written statement from the night-shift dock worker.",
       "examineText": "The dock worker recalls seeing a man matching Roland Hale's description loading the unregistered crates personally, then making a call from the pier payphone before leaving in a hurry around 11 PM."
     },
     {
       "id": "witness-statement",
       "name": "Witness Statement",
-      "icon": "\ud83d\udcdd",
-      "description": "A sworn statement from the caf\u00e9's regular patron.",
+      "icon": "📝",
+      "description": "A sworn statement from the café's regular patron.",
       "examineText": "The patron overheard Nadia Voss tell Mr. Ash: 'Tonight is the only night. After this no one can prove anything.' This was at approximately 10:25 PM on the night of the murder."
     }
   ],
@@ -183,7 +185,7 @@
     },
     {
       "id": "matchbook",
-      "name": "Caf\u00e9 Matchbook",
+      "name": "Café Matchbook",
       "description": "Voss and Ash met at 10 PM, the night of the murder."
     },
     {
@@ -223,7 +225,7 @@
         "witness-statement"
       ],
       "text": "Voss coordinated the murder plan with Ash the same night it happened.",
-      "message": "The caf\u00e9 meeting and overheard conversation confirm premeditation."
+      "message": "The café meeting and overheard conversation confirm premeditation."
     },
     {
       "id": "roland-at-docks",
@@ -231,7 +233,7 @@
         "broken-watch",
         "dock-testimony"
       ],
-      "text": "Roland Hale was at the docks during the time of the murder \u2014 not at the manor.",
+      "text": "Roland Hale was at the docks during the time of the murder — not at the manor.",
       "message": "Roland's watch and the dock worker's testimony place him elsewhere."
     },
     {
@@ -245,6 +247,12 @@
     }
   ],
   "hints": [
+    {
+      "id": "hint-office-start",
+      "forPuzzle": "office-start",
+      "text": "Pick up the case file from your desk — it names the victim, the suspects, and the locked room. Then work every location: the docks, the manor, and the café each hold something the police missed.",
+      "highlightText": "A corkboard on the wall holds everything you have so far"
+    },
     {
       "id": "hint-harbormaster-interview",
       "forPuzzle": "harbormaster-interview",
@@ -260,11 +268,39 @@
     {
       "id": "hint-witness-interview",
       "forPuzzle": "witness-interview",
-      "text": "Order something \u2014 the barista talks more freely if you're a paying customer. Ask about the night of the murder.",
+      "text": "Order something — the barista talks more freely if you're a paying customer. Ask about the night of the murder.",
       "highlightText": "including the people you're looking for"
     }
   ],
   "events": [
+    {
+      "id": "office-start",
+      "name": "Review the Case Board",
+      "description": "The corkboard holds everything. Time to make it mean something.",
+      "steps": [
+        {
+          "id": "office-start-step-1",
+          "description": "Study the corkboard and decide where to begin.",
+          "actionLabel": "Review the Board",
+          "effects": [
+            {
+              "type": "setFlag",
+              "name": "case-board-reviewed",
+              "value": true,
+              "message": "The board stares back at you. Three locations. One night. The case file in your hand is the first thread — pull it, and the whole thing unravels."
+            }
+          ]
+        }
+      ],
+      "onComplete": [
+        {
+          "type": "setFlag",
+          "name": "office-start-done",
+          "value": true,
+          "message": "You have your bearings. Time to hit the streets."
+        }
+      ]
+    },
     {
       "id": "harbormaster-interview",
       "name": "Question the Dock Workers",
@@ -339,7 +375,7 @@
               "type": "setFlag",
               "name": "desk-searched",
               "value": true,
-              "message": "Under a scattered pile of papers you find a threatening letter. The handwriting is deliberate \u2014 almost practised."
+              "message": "Under a scattered pile of papers you find a threatening letter. The handwriting is deliberate — almost practised."
             }
           ]
         },
@@ -352,7 +388,7 @@
               "type": "setFlag",
               "name": "window-searched",
               "value": true,
-              "message": "Something glints near the skirting board \u2014 a silver cufflink."
+              "message": "Something glints near the skirting board — a silver cufflink."
             }
           ]
         },
@@ -381,7 +417,7 @@
     {
       "id": "witness-interview",
       "name": "Interview the Witness",
-      "description": "A regular at the caf\u00e9 claims to have seen something important on the night of the murder.",
+      "description": "A regular at the café claims to have seen something important on the night of the murder.",
       "steps": [
         {
           "id": "witness-step-1",
@@ -414,7 +450,7 @@
           "type": "setFlag",
           "name": "cafe-investigated",
           "value": true,
-          "message": "The caf\u00e9 has told you what it knows."
+          "message": "The café has told you what it knows."
         }
       ]
     }
@@ -451,16 +487,16 @@
     {
       "id": "correct-accusation",
       "title": "Case Closed",
-      "text": "Nadia Voss's composure cracks when you present the evidence. The cufflink, the ledger, the caf\u00e9 meeting \u2014 it's airtight. She embezzled for years and when Hale found out she arranged for his silence permanently. Mr. Ash, her unwilling accomplice, corroborates everything to shorten his own sentence. Justice is slow in this city. Tonight, it moves.",
+      "text": "Nadia Voss's composure cracks when you present the evidence. The cufflink, the ledger, the café meeting — it's airtight. She embezzled for years and when Hale found out she arranged for his silence permanently. Mr. Ash, her unwilling accomplice, corroborates everything to shorten his own sentence. Justice is slow in this city. Tonight, it moves.",
       "isWin": true,
-      "icon": "\ud83d\udd0d"
+      "icon": "🔍"
     },
     {
       "id": "wrong-accusation",
       "title": "Wrong Call",
-      "text": "Your accusation crumbles under cross-examination. The suspect's alibi holds. The real perpetrator has had time to disappear \u2014 along with any remaining evidence. The case goes cold. The city keeps its secrets. You sit in your empty office and wonder what you missed.",
+      "text": "Your accusation crumbles under cross-examination. The suspect's alibi holds. The real perpetrator has had time to disappear — along with any remaining evidence. The case goes cold. The city keeps its secrets. You sit in your empty office and wonder what you missed.",
       "isWin": false,
-      "icon": "\ud83c\udf27\ufe0f"
+      "icon": "🌧️"
     }
   ]
 }
