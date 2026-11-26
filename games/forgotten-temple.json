@@ -37,7 +37,7 @@
     {
       "id": "gallery-of-idols",
       "name": "Gallery of Idols",
-      "description": "Three stone idols stand on pedestals above a set of ceremonial scales: a sun idol, a moon idol and a star idol. Faded carvings read: 'Day rises, night follows, and the stars watch over all.' A stone door to the crypt waits, sealed by the scales' judgement.",
+      "description": "Three stone idols stand on pedestals above a set of ceremonial scales: a sun idol, a moon idol and a star idol. A mural along the wall shows them placed one after another \u2014 first the sun, then the moon, then the star \u2014 with the scales balancing beneath. Faded carvings read: 'Day rises, night follows, and the stars watch over all.' A stone door to the crypt waits, sealed by the scales' judgement.",
       "sceneImage": "assets/scenes/temple-gallery-of-idols.jpg",
       "exits": [
         "entrance-hall",
@@ -75,7 +75,7 @@
     {
       "id": "altar-room",
       "name": "Altar Room",
-      "description": "A cracked altar dominates the room. Stone sconces sit dark and cold above it. An inscription reads: \"Light feeds the stone.\" A locked iron gate bars the way to the reliquary, its bronze keyhole shaped like a coiled serpent. Rubble blocks a passage south.",
+      "description": "A cracked altar dominates the room, watched over by a faded wall painting: a robed figure runs toward a great golden disc with a staff outstretched, the disc seated in the staff's crown, golden liquid poured over it. Stone sconces sit dark and cold above the altar. An inscription reads: \"Light feeds the stone.\" A locked iron gate bars the way to the reliquary, its bronze keyhole shaped like a coiled serpent. Rubble blocks a passage south.",
       "sceneImage": "assets/scenes/temple-altar-room.jpg",
       "exits": [
         "entrance-hall",
@@ -176,7 +176,7 @@
     {
       "id": "mirror-chamber",
       "name": "Chamber of Mirrors",
-      "description": "Three bronze mirrors stand on stone pedestals, filmed with centuries of dust. Carvings above them show a beam of light bent left, then up, then right into a carved eye \u2014 the temple's solar conduit. The mirrors will never catch the beam while they are blind with grime.",
+      "description": "Three bronze mirrors stand on stone pedestals, filmed with centuries of dust. A carved frieze runs the length of the wall: a figure cleans a mirror with a cloth, then turns the left mirror, then the centre, then the right, and a beam of light leaps from mirror to mirror into a carved eye \u2014 the temple's solar conduit. The mirrors will never catch the beam while they are blind with grime.",
       "sceneImage": "assets/scenes/temple-mirror-chamber.jpg",
       "exits": [
         "entrance-hall"
@@ -238,7 +238,7 @@
       "combinesWith": {
         "flint-shard": {
           "result": "lit-torch",
-          "message": "You strike the flint against the torch head. It catches with a warm crack."
+          "message": "Combining the unlit torch and the flint shard, you obtained a lit torch. It catches with a warm crack and throws long shadows across the stone."
         }
       }
     },
@@ -266,7 +266,7 @@
       "combinesWith": {
         "iron-hook": {
           "result": "climbing-line",
-          "message": "You bind the iron hook fast to the rope's end. A proper climbing line."
+          "message": "Combining the hempen rope and the iron hook, you obtained a climbing line. The knots cinch tight \u2014 built for one hard swing."
         }
       }
     },
@@ -293,7 +293,7 @@
       "combinesWith": {
         "charged-staff": {
           "result": "anointed-staff",
-          "message": "You pour the sacred oil over the sun disc. It soaks into the carvings and blazes \u2014 the relic is anointed."
+          "message": "Combining the sacred oil and the charged staff, you obtained an anointed staff. Golden oil soaks into the carvings and they blaze to life."
         }
       }
     },
@@ -313,7 +313,7 @@
       "combinesWith": {
         "sun-disc": {
           "result": "charged-staff",
-          "message": "You press the sun disc into the staff's socket. It clicks home with a resonant hum \u2014 the copper bands glow faintly."
+          "message": "Combining the ancient staff and the sun disc, you obtained a charged staff. The disc clicks home in the socket and the copper bands glow faintly."
         }
       }
     },
