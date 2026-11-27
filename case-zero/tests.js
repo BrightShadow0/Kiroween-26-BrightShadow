@@ -716,6 +716,166 @@
   });
 
 
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // GROUP E — Robustness (audit fixes)
+  // ─────────────────────────────────────────────────────────────────────────
+
+  group('E. Robustness: reference validation, warnings, engine edge cases');
+
+  function miniGame() {
+    return {
+      meta: { title: 'Fixture', description: 'test fixture' },
+      rooms: [
+        { id: 'a', name: 'Room A', description: 'da', exits: ['b'], items: [], events: [],
+          actions: [{ id: 'act1', type: 'use', label: 'Do it', description: 'You do the thing.',
+                      effects: [{ type: 'setFlag', name: 'did' }] }] },
+        { id: 'b', name: 'Room B', description: 'db', exits: [],
+          unlockCondition: { type: 'flag', name: 'open' }, lockedMessage: 'The way to B is barred.' }
+      ],
+      items: [],
+      events: [{ id: 'ev1', steps: [
+        { id: 's1', description: 'The wheel turns.',
+          action: { type: 'use', label: 'Turn', effects: [{ type: 'setFlag', name: 'open' }] } }
+      ] }],
+      hints: [], endings: []
+    };
+  }
+
+  test('reference pass: real content has no broken id links', function () {
+    const r = SpecterSchema.validateGameContent(templeData);
+    assert(!r.errors.some(e => e.indexOf('does not exist') !== -1),
+      'Broken references:\n' + r.errors.filter(e => e.indexOf('does not exist') !== -1).join('\n'));
+  });
+
+  test('reference pass: exit to a nonexistent room is rejected', function () {
+    const bad = miniGame();
+    bad.rooms[0].exits = ['nowhere'];
+    const r = SpecterSchema.validateGameContent(bad);
+    assert(!r.valid, 'broken exit must fail validation');
+    assert(r.errors.some(e => e.indexOf('nowhere') !== -1 && e.indexOf('exits') !== -1), 'error should name the exit target');
+  });
+
+  test('reference pass: combine result pointing nowhere is rejected', function () {
+    const bad = miniGame();
+    bad.items = [{ id: 'x', name: 'X', combinesWith: { y: { result: 'ghost' } } }, { id: 'y', name: 'Y' }];
+    const r = SpecterSchema.validateGameContent(bad);
+    assert(!r.valid, 'broken combine result must fail validation');
+    assert(r.errors.some(e => e.indexOf('ghost') !== -1), 'error should name the missing result item');
+  });
+
+  test('reference pass: hint for an unknown puzzle is rejected', function () {
+    const bad = miniGame();
+    bad.hints = [{ id: 'h1', forPuzzle: 'ghost-puzzle', text: 'look closer' }];
+    const r = SpecterSchema.validateGameContent(bad);
+    assert(!r.valid, 'broken hint link must fail validation');
+    assert(r.errors.some(e => e.indexOf('ghost-puzzle') !== -1), 'error should name the bad puzzle id');
+  });
+
+  test('reference pass: triggerEnding to an unknown ending is rejected', function () {
+    const bad = miniGame();
+    bad.rooms[0].actions[0].effects = [{ type: 'triggerEnding', endingId: 'no-such-ending' }];
+    const r = SpecterSchema.validateGameContent(bad);
+    assert(!r.valid, 'broken ending link must fail validation');
+    assert(r.errors.some(e => e.indexOf('no-such-ending') !== -1), 'error should name the ending id');
+  });
+
+  test('reference pass: suspect ending and required deductions are checked', function () {
+    const bad = miniGame();
+    bad.suspects = [{ id: 's1', name: 'Sus', endingId: 'ghost-ending', requiresDeductions: ['ghost-ded'] }];
+    bad.endings = [{ id: 'real', title: 'R', text: 'rt' }];
+    const r = SpecterSchema.validateGameContent(bad);
+    assert(!r.valid, 'bad suspect links must fail validation');
+    assert(r.errors.some(e => e.indexOf('ghost-ending') !== -1), 'error should name the ending');
+    assert(r.errors.some(e => e.indexOf('ghost-ded') !== -1), 'error should name the deduction');
+  });
+
+  test('shape: deduction without sources and suspect without endingId are rejected', function () {
+    const bad = miniGame();
+    bad.deductions = [{ id: 'd1', text: 'something' }];
+    bad.suspects = [{ id: 's1', name: 'Sus' }];
+    const r = SpecterSchema.validateGameContent(bad);
+    assert(!r.valid, 'shape errors must fail validation');
+    assert(r.errors.some(e => e.indexOf('sources') !== -1), 'error should mention sources');
+    assert(r.errors.some(e => e.indexOf('endingId') !== -1), 'error should mention endingId');
+  });
+
+  test('warnings: unknown theme warns but stays playable', function () {
+    const g = miniGame();
+    g.meta.theme = 'spooky';
+    const r = SpecterSchema.validateGameContent(g);
+    assert(r.valid, 'unknown theme must not block the game');
+    assert(r.warnings.some(w => w.indexOf('spooky') !== -1), 'warning should name the theme');
+  });
+
+  test('warnings: timed-only fields in an untimed game are flagged', function () {
+    const g = miniGame();
+    g.meta.combineFailPenaltySeconds = 10;
+    g.events[0].steps[0].action.penaltySeconds = 5;
+    const r = SpecterSchema.validateGameContent(g);
+    assert(r.valid, 'timed-only fields must not block the game');
+    assert(r.warnings.some(w => w.indexOf('combineFailPenaltySeconds') !== -1), 'warning should list the fields');
+  });
+
+  test('engine: meta.startRoom overrides the rooms[0] default', function () {
+    const g = miniGame();
+    g.meta.startRoom = 'b';
+    SpecterEngine.load(g);
+    const st = SpecterEngine.getState();
+    assertEquals(st.room.id, 'b', 'start room should be meta.startRoom');
+  });
+
+  test('engine: a bad meta.startRoom is caught by reference validation', function () {
+    const g = miniGame();
+    g.meta.startRoom = 'nowhere';
+    const r = SpecterSchema.validateGameContent(g);
+    assert(!r.valid, 'bad startRoom must fail validation');
+    assert(r.errors.some(e => e.indexOf('meta.startRoom') !== -1), 'error should point at meta.startRoom');
+  });
+
+  test('engine: locked move returns the room lockedMessage', function () {
+    SpecterEngine.load(miniGame());
+    const r = SpecterEngine.performAction({ type: 'move', roomId: 'b' });
+    assert(!r.ok, 'locked move must fail');
+    assertEquals(r.message, 'The way to B is barred.', 'should use room.lockedMessage');
+  });
+
+  test('engine: step action with silent effects answers with the step description', function () {
+    SpecterEngine.load(miniGame());
+    const r = SpecterEngine.performAction({ type: 'trigger', eventId: 'ev1' });
+    assert(r.ok, 'step should run');
+    assertEquals(r.message, 'The wheel turns.', 'no bare "Done." may leak to the player');
+    assert(r.state.flags.open, 'effects should still apply');
+  });
+
+  test('engine: performRoomAction runs a room action by id', function () {
+    SpecterEngine.load(miniGame());
+    const r = SpecterEngine.performRoomAction('act1');
+    assert(r.ok, 'room action should run');
+    assertEquals(r.message, 'You do the thing.', 'silent effects fall back to the action description');
+    assert(r.state.flags.did, 'effects should apply');
+    const bad = SpecterEngine.performRoomAction('nope');
+    assert(!bad.ok, 'unknown room action id must fail');
+  });
+
+  test('engine: saveKey option namespaces saves', function () {
+    const store = {};
+    global.localStorage = {
+      getItem: function (k) { return k in store ? store[k] : null; },
+      setItem: function (k, v) { store[k] = String(v); },
+      removeItem: function (k) { delete store[k]; }
+    };
+    try {
+      SpecterEngine.load(miniGame(), { saveKey: 'specter_save_playground_fixture_1' });
+      SpecterEngine.performRoomAction('act1'); // triggers autosave
+      assert('specter_save_playground_fixture_1' in store, 'save must land under the custom key');
+      assert(!('specter_save_fixture' in store), 'default key must stay untouched');
+    } finally {
+      delete global.localStorage;
+    }
+  });
+
+
   // ─────────────────────────────────────────────────────────────────────────
   // Summary
   // ─────────────────────────────────────────────────────────────────────────
