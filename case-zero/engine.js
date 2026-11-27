@@ -3,9 +3,8 @@
  *
  * Owns ALL game logic. Content files are pure data; this module interprets them.
  *
- * Public API (all methods are pure-ish: they mutate engine state then return
- * a plain state snapshot that the renderer can consume without touching engine
- * internals):
+ * Public API (methods mutate engine state, then return a plain snapshot for
+ * the renderer):
  *
  *   SpecterEngine.load(gameData)         → void
  *   SpecterEngine.getState()             → StateSnapshot
@@ -26,7 +25,7 @@
   let _gameData   = null;   // the loaded content file (read-only reference)
   let _gameId     = null;   // derived from meta.title, used for localStorage key
 
-  // Mutable runtime state — everything that changes during play
+  // Mutable runtime state
   let _state = null;
   /*
    * _state shape:
@@ -503,7 +502,7 @@
         const rule = (itemA.combinesWith && itemA.combinesWith[action.itemIdB]) ||
                      (itemB.combinesWith && itemB.combinesWith[action.itemIdA]);
         if (!rule) {
-          // Content may set meta.combineFailPenaltySeconds to punish brute-forcing pairs
+          // Optional meta.combineFailPenaltySeconds penalizes wrong pairs
           const penalized = _applyTimePenalty(_gameData.meta.combineFailPenaltySeconds);
           result = { ok: false, message: `${itemA.name} and ${itemB.name} don't combine into anything.` + (penalized ? ' ' + penalized : '') };
           break;
@@ -544,7 +543,7 @@
           result = { ok: false, message: 'No such suspect.' };
           break;
         }
-        // Check required deductions if any
+        // Check required deductions
         if (suspect.requiresDeductions) {
           const missing = suspect.requiresDeductions.filter(d => !_state.deductions.includes(d));
           if (missing.length > 0) {
