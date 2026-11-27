@@ -1035,6 +1035,7 @@
       var gamename = document.getElementById('pg-gamename');
 
       var _parsed = null;
+      var _rawText = '';
 
       function resetPanels() {
         errorsEl.hidden = true;
@@ -1179,6 +1180,7 @@
           showErrors(['That is not valid JSON: ' + e.message + parseLocation(e.message)]);
           return;
         }
+        _rawText = text;
         var res = window.SpecterSchema.validateGameContent(data);
         if (!res.valid) {
           showErrors(res.errors);
@@ -1197,6 +1199,12 @@
         dim.className = 'pg-dim';
         dim.textContent = 'Theme: ' + (meta.theme || 'default') + (meta.timed ? ' · timed (' + (meta.timeLimitSeconds || '?') + 's)' : ' · untimed');
         okSum.appendChild(dim);
+        if (res.warnings && res.warnings.length) {
+          var warn = document.createElement('div');
+          warn.className = 'pg-dim';
+          warn.textContent = '⚠ ' + res.warnings.join(' — ');
+          okSum.appendChild(warn);
+        }
         buildImageRows(data);
         okEl.hidden = false;
         okEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
@@ -1218,7 +1226,15 @@
 
         try {
           window.SpecterRenderer.init('specter-root');
-          window.SpecterEngine.load(data, { resumeSaved: false });
+          var fingerprint = 0;
+          for (var ci = 0; ci < _rawText.length; ci++) {
+            fingerprint = ((fingerprint << 5) - fingerprint + _rawText.charCodeAt(ci)) | 0;
+          }
+          var slug = ((data.meta && data.meta.title) || 'custom').toLowerCase().replace(/\s+/g, '-');
+          window.SpecterEngine.load(data, {
+            resumeSaved: false,
+            saveKey: 'specter_save_playground_' + slug + '_' + (fingerprint >>> 0).toString(36)
+          });
           if (data.meta && data.meta.timed) {
             window.SpecterEngine.startTimer(
               function (remaining) {
