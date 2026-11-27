@@ -1,0 +1,92 @@
+{
+  "meta": {
+    "title": "The Lantern Cellar",
+    "description": "A tiny two-room example game that ships as the playground template. Every value below is a working example of what goes in that field — copy this file and replace each piece with your own.",
+    "theme": "temple",
+    "timed": false
+  },
+  "rooms": [
+    {
+      "id": "cellar-door",
+      "name": "Cellar Door",
+      "description": "A damp stairwell ends at a heavy oak door. An unlit lantern hangs from a rusted hook beside it, and a dark passage leads down into the wine cellar.",
+      "sceneImage": "images/cellar-door.jpg",
+      "exits": ["wine-cellar"],
+      "items": ["box-of-matches"],
+      "events": ["light-the-lantern"],
+      "actions": [],
+      "unlockCondition": null
+    },
+    {
+      "id": "wine-cellar",
+      "name": "Wine Cellar",
+      "description": "Racks of dusty bottles line the walls. High above the far stairs, a thin stripe of daylight outlines an iron grate.",
+      "exits": ["cellar-door"],
+      "items": [],
+      "events": [],
+      "actions": [
+        {
+          "id": "climb-to-grate",
+          "type": "use",
+          "label": "Climb out through the grate",
+          "description": "With the lantern lit you can see the footholds up to the grate.",
+          "condition": { "type": "flag", "name": "lantern-lit" },
+          "failMessage": "It is too dark to find the footholds. You need light first.",
+          "successMessage": "You climb the racks, ease the grate open, and pull yourself toward the light.",
+          "effects": [
+            { "type": "triggerEnding", "endingId": "escape-ending" }
+          ]
+        }
+      ],
+      "unlockCondition": { "type": "flag", "name": "lantern-lit" }
+    }
+  ],
+  "items": [
+    {
+      "id": "box-of-matches",
+      "name": "Box of Matches",
+      "icon": "🔥",
+      "description": "A strike-anywhere matchbox, half full.",
+      "examineText": "The striker strip is dry. These will light."
+    }
+  ],
+  "events": [
+    {
+      "id": "light-the-lantern",
+      "steps": [
+        {
+          "id": "light-step-1",
+          "description": "The lantern wick is dry. A match would catch it — if you had one.",
+          "actionLabel": "Light the Lantern",
+          "action": {
+            "type": "use",
+            "label": "Light the Lantern",
+            "condition": { "type": "hasItem", "id": "box-of-matches" },
+            "failMessage": "The wick needs a flame. Something in this room could strike one.",
+            "effects": []
+          },
+          "effects": [
+            { "type": "setFlag", "name": "lantern-lit", "value": true, "message": "The lantern flares to life, throwing warm light up the stairwell and down into the cellar." }
+          ]
+        }
+      ]
+    }
+  ],
+  "hints": [
+    {
+      "id": "hint-lantern",
+      "forPuzzle": "light-the-lantern",
+      "text": "The lantern is the way forward, but it cannot burn on its own. Pick up whatever could light it, then press the event's action button.",
+      "highlightText": "An unlit lantern hangs from a rusted hook"
+    }
+  ],
+  "endings": [
+    {
+      "id": "escape-ending",
+      "title": "Into the Light",
+      "text": "You squeeze through the grate and stand up in the afternoon sun. The cellar keeps its damp secrets; you keep the matches.",
+      "isWin": true,
+      "icon": "🕯️"
+    }
+  ]
+}
