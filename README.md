@@ -15,6 +15,16 @@ Each folder is fully self-contained: `engine.js` + `renderer.js` + `schema.js`
 (the Specter Engine), `game.html` (the player), `game.json` (all game content),
 `tests.js` (node test suite), and `assets/scenes/` (per-room scene art).
 
+## Playground
+
+`playground.html` (linked from the landing page) lets anyone try their own game
+live: paste a game JSON or upload a file, it is validated against the same
+`schema.js` the two shipped games use (clear, path-tagged errors; the page never
+crashes on bad input), optional scene images can be uploaded per room, and a
+valid game launches playable right there. `sample-game.json` at the repo root is
+the pre-loaded template: a working two-room game whose values show what goes in
+each field.
+
 ## Run them
 
 Everything is static. Either open the live site:
@@ -22,6 +32,7 @@ Everything is static. Either open the live site:
 - Landing: https://brightshadow0.github.io/Kiroween-26-BrightShadow/
 - Temple: https://brightshadow0.github.io/Kiroween-26-BrightShadow/forgotten-temple/game.html
 - Case Zero: https://brightshadow0.github.io/Kiroween-26-BrightShadow/case-zero/game.html
+- Playground: https://brightshadow0.github.io/Kiroween-26-BrightShadow/playground.html
 
 or serve the repo locally (`npx serve .` or any static server) and open
 `index.html` — pages fetch their JSON, so they need HTTP, not `file://`.
@@ -29,8 +40,8 @@ or serve the repo locally (`npx serve .` or any static server) and open
 ## Run the tests
 
 ```
-cd forgotten-temple && node tests.js   # 67 tests
-cd case-zero && node tests.js          # 62 tests
+cd forgotten-temple && node tests.js   # 72 tests
+cd case-zero && node tests.js          # 67 tests
 ```
 
 The suites include full playthroughs of both games driven entirely through the
