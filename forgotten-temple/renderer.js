@@ -154,15 +154,32 @@
     const scene = ROOM_SCENES[theme + ':' + room.id] || ROOM_SCENES[theme + ':default'] || ROOM_SCENES['temple:default'];
     const sceneEl = document.createElement('div');
     sceneEl.className = 'room-scene scene-' + theme + (room.sceneImage ? ' has-image' : '');
-    sceneEl.innerHTML =
-      (room.sceneImage
-        ? '<img class="scene-img" src="' + ((global.SPECTER_SCENES && global.SPECTER_SCENES[room.sceneImage]) || room.sceneImage) + '" alt="" onerror="this.remove()">' +
-          '<span class="scene-scrim"></span>'
-        : '<svg viewBox="0 0 1024 160" preserveAspectRatio="none" aria-hidden="true">' +
-          '<path d="' + scene + '" fill="currentColor"/>' +
-          '</svg>') +
-      '<span class="scene-glow"></span>' +
-      '<h2 class="room-name">📍 ' + room.name + '</h2>';
+    const svgScene = () => {
+      const wrap = document.createElement('span');
+      wrap.innerHTML = '<svg viewBox="0 0 1024 160" preserveAspectRatio="none" aria-hidden="true">' +
+        '<path d="' + scene + '" fill="currentColor"/></svg>';
+      return wrap.firstChild;
+    };
+    if (room.sceneImage) {
+      const img = el('img', {
+        className: 'scene-img',
+        src: (global.SPECTER_SCENES && global.SPECTER_SCENES[room.sceneImage]) || room.sceneImage,
+        alt: ''
+      });
+      // A bad key or URL swaps in the built-in scene art and says so
+      img.addEventListener('error', () => {
+        console.warn('[SpecterRenderer] sceneImage "' + room.sceneImage + '" failed to load; using fallback scene art');
+        img.remove();
+        sceneEl.classList.remove('has-image');
+        sceneEl.insertBefore(svgScene(), sceneEl.firstChild);
+      });
+      sceneEl.appendChild(img);
+      sceneEl.appendChild(el('span', { className: 'scene-scrim' }));
+    } else {
+      sceneEl.appendChild(svgScene());
+    }
+    sceneEl.appendChild(el('span', { className: 'scene-glow' }));
+    sceneEl.appendChild(el('h2', { className: 'room-name', textContent: '📍 ' + room.name }));
     const section = el('section', { className: 'specter-room room-enter' },
       sceneEl,
       el('p',  { className: 'room-desc', textContent: room.description })
@@ -176,11 +193,13 @@
       el('h3', { textContent: '🚪 Exits' })
     );
     for (const exit of state.availableExits) {
+      // Locked exits stay clickable: the engine answers with the room's
+      // lockedMessage (or a default) so the player learns why.
       const exitBtn = btn(
         exit.locked ? `🔒 ${exit.name}` : `➜ ${exit.name}`,
         () => dispatch({ type: 'move', roomId: exit.id }),
         exit.locked ? 'btn-locked' : 'btn-exit',
-        exit.locked
+        false
       );
       section.appendChild(exitBtn);
     }
@@ -209,17 +228,18 @@
       el('h3', { textContent: '⚡ Actions' })
     );
     for (const action of state.room.allActions) {
-      const condMet = !action.condition ||
-        global.SpecterEngine.performAction({ type: '__condcheck__', _cond: action.condition });
-      // state.room.actions is already condition-filtered
+      // state.room.actions is already condition-filtered by the engine
       const visible = state.room.actions.some(a => a.id === action.id || a === action);
       if (!visible) continue;
 
       const actionBtn = btn(
         action.label,
         () => {
-          // Room actions dispatch by id
-          dispatch({ type: 'roomAction', actionId: action.id });
+          const result = global.SpecterEngine.performRoomAction(action.id);
+          if (result.message) {
+            pushMessage(result.message, result.ok ? 'msg-ok' : 'msg-fail');
+          }
+          renderFull(result.state);
         },
         'btn-action'
       );
@@ -499,9 +519,9 @@
       const isActive  = r.id === state.room.id;
       const moveBtn   = btn(
         (isActive ? '▶ ' : '') + r.name,
-        () => { if (!isActive && !r.locked) dispatch({ type: 'move', roomId: r.id }); },
+        () => { if (!isActive) dispatch({ type: 'move', roomId: r.id }); },
         'btn-map' + (isActive ? ' btn-map-active' : '') + (r.locked ? ' btn-locked' : ''),
-        r.locked || isActive
+        isActive
       );
       section.appendChild(moveBtn);
     }
