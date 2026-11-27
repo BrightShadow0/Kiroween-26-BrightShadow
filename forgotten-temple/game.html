@@ -75,6 +75,18 @@
       }
     }
 
+    @media (max-width: 480px) {
+      .specter-layout { padding: 0.6rem; }
+      .specter-header { flex-wrap: wrap; gap: 0.4rem; }
+      .specter-game-title { font-size: 1rem; }
+      .inv-grid { grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); }
+      .combine-panel, .link-panel { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+      .combine-select { flex: 1 1 40%; min-width: 0; }
+      .clue-entry-name, .deduction-item { word-break: break-word; }
+      .accuse-panel .specter-btn, .combine-panel .specter-btn, .link-panel .specter-btn { width: 100%; }
+      .ending-box { width: 92vw; padding: 1rem; }
+    }
+
     .col-main, .col-side {
       display: flex;
       flex-direction: column;
