@@ -11,6 +11,7 @@
 const SUPPORTED_CONDITION_TYPES = ['hasItem', 'solvedPuzzle', 'flag', 'hasDeduction', 'allOf', 'anyOf', 'not'];
 const SUPPORTED_ACTION_TYPES    = ['pickup', 'examine', 'use', 'combine', 'move', 'trigger', 'accuse', 'link'];
 const SUPPORTED_EFFECT_TYPES    = ['setFlag', 'giveItem', 'removeItem', 'solveRoom', 'triggerEnding', 'resetRooms', 'addDeduction'];
+const KNOWN_THEMES = ['temple', 'noir', 'default'];
 const TOP_LEVEL_KEYS = new Set([
   'meta', 'rooms', 'items', 'clues', 'hints', 'events', 'endings',
   // Detective-game extensions (generic engine features, not game-specific)
@@ -205,16 +206,144 @@ function validateClue(clue, idx) {
   return errors;
 }
 
+function validateDeduction(ded, idx) {
+  const errors = [];
+  const path   = `deductions[${idx}]`;
+  if (!ded.id)   errors.push(err(path, 'deduction missing required field "id"'));
+  if (!ded.text) errors.push(err(path, 'deduction missing required field "text"'));
+  if (!Array.isArray(ded.sources) || ded.sources.length === 0) {
+    errors.push(err(path + '.sources', 'deduction requires a non-empty "sources" array of clue ids'));
+  }
+  if (ded.effects && Array.isArray(ded.effects)) {
+    ded.effects.forEach((e, i) => errors.push(...validateEffect(e, `${path}.effects[${i}]`)));
+  }
+  return errors;
+}
+
+function validateSuspect(suspect, idx) {
+  const errors = [];
+  const path   = `suspects[${idx}]`;
+  if (!suspect.id)       errors.push(err(path, 'suspect missing required field "id"'));
+  if (!suspect.name)     errors.push(err(path, 'suspect missing required field "name"'));
+  if (!suspect.endingId) errors.push(err(path, 'suspect missing required field "endingId"'));
+  if (suspect.requiresDeductions && !Array.isArray(suspect.requiresDeductions)) {
+    errors.push(err(path + '.requiresDeductions', 'must be an array of deduction ids'));
+  }
+  return errors;
+}
+
+/**
+ * Second pass: every id that refers to another part of the content file must
+ * resolve. Shape validation alone lets broken links through to runtime.
+ */
+function validateReferences(gameData) {
+  const errors = [];
+  const roomIds      = new Set((gameData.rooms    || []).map(r => r.id).filter(Boolean));
+  const itemIds      = new Set((gameData.items    || []).map(i => i.id).filter(Boolean));
+  const eventIds     = new Set((gameData.events   || []).map(e => e.id).filter(Boolean));
+  const endingIds    = new Set((gameData.endings  || []).map(e => e.id).filter(Boolean));
+  const deductionIds = new Set((gameData.deductions || []).map(d => d.id).filter(Boolean));
+  const clueIds      = new Set((gameData.clues    || []).map(c => c.id).filter(Boolean));
+  // solvedPuzzle / solveRoom accept event ids or room ids
+  const puzzleIds    = new Set([...eventIds, ...roomIds]);
+  // deduction sources reference clues, which are also inventory items
+  const evidenceIds  = new Set([...clueIds, ...itemIds]);
+
+  function need(set, id, path, what) {
+    if (id !== undefined && id !== null && !set.has(id)) {
+      errors.push(err(path, `${what} "${id}" does not exist`));
+    }
+  }
+
+  function checkConditionRefs(cond, path) {
+    if (!cond || typeof cond !== 'object') return;
+    if (cond.type === 'hasItem')       need(itemIds, cond.id, path, 'condition refers to item');
+    if (cond.type === 'solvedPuzzle')  need(puzzleIds, cond.id, path, 'condition refers to puzzle/event/room');
+    if (cond.type === 'hasDeduction')  need(deductionIds, cond.id, path, 'condition refers to deduction');
+    (cond.conditions || []).forEach((c, i) => checkConditionRefs(c, `${path}.conditions[${i}]`));
+    if (cond.condition) checkConditionRefs(cond.condition, path + '.condition');
+  }
+
+  function checkEffectRefs(eff, path) {
+    if (!eff || typeof eff !== 'object') return;
+    if (eff.type === 'giveItem' || eff.type === 'removeItem') need(itemIds, eff.itemId, path, 'effect refers to item');
+    if (eff.type === 'triggerEnding')  need(endingIds, eff.endingId, path, 'effect refers to ending');
+    if (eff.type === 'addDeduction')   need(deductionIds, eff.deductionId, path, 'effect refers to deduction');
+    if (eff.type === 'solveRoom')      need(puzzleIds, eff.puzzleId || eff.roomId, path, 'effect refers to puzzle/room');
+  }
+
+  function checkActionRefs(action, path) {
+    if (!action) return;
+    if (action.condition) checkConditionRefs(action.condition, path + '.condition');
+    (action.effects || []).forEach((e, i) => checkEffectRefs(e, `${path}.effects[${i}]`));
+  }
+
+  if (gameData.meta) {
+    need(roomIds, gameData.meta.startRoom, 'meta.startRoom', 'start room');
+    (gameData.meta.onTimerEnd || []).forEach((e, i) => checkEffectRefs(e, `meta.onTimerEnd[${i}]`));
+  }
+
+  (gameData.rooms || []).forEach((room, ri) => {
+    const rp = `rooms[${ri}]`;
+    (room.exits  || []).forEach(id => need(roomIds, id, rp + '.exits', 'exit leads to room'));
+    (room.items  || []).forEach(id => need(itemIds, id, rp + '.items', 'room lists item'));
+    (room.events || []).forEach(id => need(eventIds, id, rp + '.events', 'room lists event'));
+    if (room.unlockCondition) checkConditionRefs(room.unlockCondition, rp + '.unlockCondition');
+    (room.actions || []).forEach((a, ai) => checkActionRefs(a, `${rp}.actions[${ai}]`));
+  });
+
+  (gameData.items || []).forEach((item, ii) => {
+    const ip = `items[${ii}]`;
+    if (item.combinesWith && typeof item.combinesWith === 'object') {
+      for (const [otherId, rule] of Object.entries(item.combinesWith)) {
+        need(itemIds, otherId, `${ip}.combinesWith`, 'combines with item');
+        if (rule && typeof rule === 'object') {
+          need(itemIds, rule.result, `${ip}.combinesWith["${otherId}"].result`, 'combine result item');
+          (rule.effects || []).forEach((e, i) => checkEffectRefs(e, `${ip}.combinesWith["${otherId}"].effects[${i}]`));
+        }
+      }
+    }
+    (item.onPickup   || []).forEach((e, i) => checkEffectRefs(e, `${ip}.onPickup[${i}]`));
+    (item.useEffects || []).forEach((e, i) => checkEffectRefs(e, `${ip}.useEffects[${i}]`));
+  });
+
+  (gameData.events || []).forEach((event, ei) => {
+    (event.steps || []).forEach((step, si) => {
+      const sp = `events[${ei}].steps[${si}]`;
+      if (step.action) checkActionRefs(step.action, sp + '.action');
+      (step.effects || []).forEach((e, i) => checkEffectRefs(e, `${sp}.effects[${i}]`));
+    });
+    (event.onComplete || []).forEach((e, i) => checkEffectRefs(e, `events[${ei}].onComplete[${i}]`));
+  });
+
+  (gameData.hints || []).forEach((hint, hi) => {
+    need(puzzleIds, hint.forPuzzle, `hints[${hi}].forPuzzle`, 'hint refers to puzzle/event/room');
+  });
+
+  (gameData.deductions || []).forEach((ded, di) => {
+    (ded.sources || []).forEach(id => need(evidenceIds, id, `deductions[${di}].sources`, 'deduction source clue'));
+  });
+
+  (gameData.suspects || []).forEach((suspect, si) => {
+    const sp = `suspects[${si}]`;
+    need(endingIds, suspect.endingId, sp + '.endingId', 'suspect leads to ending');
+    (suspect.requiresDeductions || []).forEach(id => need(deductionIds, id, sp + '.requiresDeductions', 'required deduction'));
+  });
+
+  return errors;
+}
+
 /**
  * Validate a parsed game content object.
  * @param {object} gameData
  * @returns {{ valid: boolean, errors: string[] }}
  */
 function validateGameContent(gameData) {
-  const errors = [];
+  const errors   = [];
+  const warnings = [];
 
   if (!gameData || typeof gameData !== 'object') {
-    return { valid: false, errors: ['root must be a JSON object'] };
+    return { valid: false, errors: ['root must be a JSON object'], warnings };
   }
 
   // Check for unrecognised top-level keys
@@ -264,6 +393,22 @@ function validateGameContent(gameData) {
     }
   }
 
+  if (gameData.deductions) {
+    if (!Array.isArray(gameData.deductions)) {
+      errors.push('[deductions] must be an array');
+    } else {
+      gameData.deductions.forEach((d, i) => errors.push(...validateDeduction(d, i)));
+    }
+  }
+
+  if (gameData.suspects) {
+    if (!Array.isArray(gameData.suspects)) {
+      errors.push('[suspects] must be an array');
+    } else {
+      gameData.suspects.forEach((s, i) => errors.push(...validateSuspect(s, i)));
+    }
+  }
+
   if (gameData.endings) {
     if (!Array.isArray(gameData.endings)) {
       errors.push('[endings] must be an array');
@@ -272,7 +417,28 @@ function validateGameContent(gameData) {
     }
   }
 
-  return { valid: errors.length === 0, errors };
+  // Warnings: playable, but likely not what the author meant
+  if (gameData.meta && gameData.meta.theme && !KNOWN_THEMES.includes(gameData.meta.theme)) {
+    warnings.push(`[meta.theme] unknown theme "${gameData.meta.theme}"; known: ${KNOWN_THEMES.join(', ')} (falls back to default art and styling)`);
+  }
+  if (gameData.meta && !gameData.meta.timed) {
+    const timedOnly = [];
+    if (gameData.meta.combineFailPenaltySeconds) timedOnly.push('meta.combineFailPenaltySeconds');
+    if (gameData.meta.onTimerEnd) timedOnly.push('meta.onTimerEnd');
+    (gameData.events || []).forEach((ev, ei) => (ev.steps || []).forEach((st, si) => {
+      if (st.action && st.action.penaltySeconds) timedOnly.push(`events[${ei}].steps[${si}].action.penaltySeconds`);
+    }));
+    (gameData.rooms || []).forEach((r, ri) => (r.actions || []).forEach((a, ai) => {
+      if (a.penaltySeconds) timedOnly.push(`rooms[${ri}].actions[${ai}].penaltySeconds`);
+    }));
+    if (timedOnly.length > 0) {
+      warnings.push('[meta.timed] game is untimed; these fields only work in timed games and are ignored: ' + timedOnly.join(', '));
+    }
+  }
+
+  errors.push(...validateReferences(gameData));
+
+  return { valid: errors.length === 0, errors, warnings };
 }
 
 // Export for both browser (global) and Node.js (CommonJS)
