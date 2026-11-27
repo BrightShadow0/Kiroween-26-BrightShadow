@@ -657,6 +657,65 @@
     assertEquals(r.state.endingId, 'wrong-accusation', 'should reach wrong ending');
   });
 
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // GROUP D — Playground (custom game loading)
+  // ─────────────────────────────────────────────────────────────────────────
+
+  group('D. Playground');
+
+  // Load the shipped playground template the same way the playground does:
+  // read the file, JSON.parse it, validate against the schema, boot the engine.
+  let playgroundTemplateRaw = null;
+  if (typeof require !== 'undefined') {
+    playgroundTemplateRaw = require('fs').readFileSync(require('path').join(__dirname, '..', 'sample-game.json'), 'utf8');
+  } else {
+    playgroundTemplateRaw = global._playgroundSampleRaw || null;
+  }
+
+  test('playground template file parses and passes schema validation', function () {
+    assert(playgroundTemplateRaw, 'sample-game.json not reachable from this test runner');
+    const tpl = JSON.parse(playgroundTemplateRaw);
+    const r = SpecterSchema.validateGameContent(tpl);
+    assert(r.valid, 'Template must validate:\n' + r.errors.join('\n'));
+  });
+
+  test('playground template boots and plays through to its ending', function () {
+    const tpl = JSON.parse(playgroundTemplateRaw);
+    SpecterEngine.load(tpl, { resumeSaved: false });
+    const s0 = SpecterEngine.getState();
+    assertEquals(s0.room.id, tpl.rooms[0].id, 'Should start in the first room');
+    assert(SpecterEngine.performAction({ type: 'pickup', itemId: 'box-of-matches' }).ok, 'pickup should work');
+    assert(SpecterEngine.performAction({ type: 'trigger', eventId: 'light-the-lantern' }).ok, 'event step should work');
+    assert(SpecterEngine.performAction({ type: 'move', roomId: 'wine-cellar' }).ok, 'exit should unlock after the event');
+    assert(SpecterEngine.performAction({ type: 'roomAction', actionId: 'climb-to-grate' }).ok, 'room action should fire');
+    const s1 = SpecterEngine.getState();
+    assert(s1.ended && s1.endingId === 'escape-ending', 'Template should reach its win ending');
+  });
+
+  test('playground rejects malformed JSON at parse time (no crash)', function () {
+    let threw = false;
+    try { JSON.parse('{ "meta": { '); } catch (e) { threw = true; }
+    assert(threw, 'Malformed JSON should throw at parse time; the playground catches this and shows it');
+  });
+
+  test('playground rejects schema-invalid games with clear path errors (empty rooms)', function () {
+    const bad = JSON.parse(playgroundTemplateRaw);
+    bad.rooms = [];
+    const r = SpecterSchema.validateGameContent(bad);
+    assert(!r.valid, 'A game with no rooms must be rejected');
+    assert(r.errors.some(e => e.indexOf('rooms') !== -1), 'Error should point at [rooms]');
+  });
+
+  test('playground rejects unknown top-level keys', function () {
+    const bad = JSON.parse(playgroundTemplateRaw);
+    bad.bogusKey = {};
+    const r = SpecterSchema.validateGameContent(bad);
+    assert(!r.valid, 'An unknown top-level key must be rejected');
+    assert(r.errors.some(e => e.indexOf('bogusKey') !== -1), 'Error should name the bad key');
+  });
+
+
   // ─────────────────────────────────────────────────────────────────────────
   // Summary
   // ─────────────────────────────────────────────────────────────────────────
