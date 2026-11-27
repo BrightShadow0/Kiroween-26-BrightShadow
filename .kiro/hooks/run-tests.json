@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Run test suites on engine/content changes",
+      "trigger": "PostFileSave",
+      "description": "After saving engine.js, schema.js, renderer.js, or a game.json, runs both test suites (forgotten-temple and case-zero) and reports results.",
+      "matcher": "(engine\\.js|schema\\.js|renderer\\.js|game\\.json)$",
+      "action": {
+        "type": "command",
+        "command": "echo '=== forgotten-temple ===' && node forgotten-temple/tests.js && echo '=== case-zero ===' && node case-zero/tests.js",
+        "timeout": 30
+      }
+    }
+  ]
+}
