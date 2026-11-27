@@ -68,8 +68,7 @@
   }
 
   function renderMessages(container) {
-    // The journal gets its own section so it always occupies dedicated space,
-    // even before the first entry arrives.
+    // Journal section
     const section = el('section', { className: 'specter-journal' },
       el('h3', { textContent: '📜 Journal' })
     );
@@ -212,14 +211,14 @@
     for (const action of state.room.allActions) {
       const condMet = !action.condition ||
         global.SpecterEngine.performAction({ type: '__condcheck__', _cond: action.condition });
-      // Re-evaluate visibility properly by checking via state snapshot's filtered list
+      // state.room.actions is already condition-filtered
       const visible = state.room.actions.some(a => a.id === action.id || a === action);
       if (!visible) continue;
 
       const actionBtn = btn(
         action.label,
         () => {
-          // For actions in the room, we dispatch them directly with their type
+          // Room actions dispatch by id
           dispatch({ type: 'roomAction', actionId: action.id });
         },
         'btn-action'
@@ -362,8 +361,7 @@
   }
 
   function renderEvidenceBoard(state, container) {
-    // The evidence board is only shown when the game has deduction definitions
-    // (i.e. the content file is a detective-style game).
+    // Evidence board: only for games with deduction definitions
     const defs = state.deductionDefs;
     if (!defs || defs.length === 0) return;
 
@@ -379,8 +377,7 @@
       return;
     }
 
-    // Each piece of evidence renders as a full readable entry, not a chip,
-    // so the accumulated case file can actually be read.
+    // Evidence entries render full text
     const clueList = el('div', { className: 'clue-entries' });
     for (const clue of clues) {
       clueList.appendChild(el('div', { className: 'clue-entry' },
@@ -444,8 +441,7 @@
 
   function renderAccusation(state, container) {
     const suspects = (global.SpecterEngine._gameData || {}).suspects;
-    // Access suspects via a small backdoor (content data needed here)
-    // We use a soft coupling: check window._specterGameData set by game.html
+    // Suspects read from window._specterGameData (set by the page boot)
     const gameData = global._specterGameData;
     if (!gameData || !gameData.suspects) return;
 
@@ -528,8 +524,7 @@
       return;
     }
 
-    // Clear and rebuild. Carry the content's theme onto the root so the page
-    // CSS can re-skin per game (temple ember gold, noir blue, ...).
+    // Clear and rebuild. Copy the content theme onto root for per-game CSS.
     _root.dataset.theme = (state.meta && state.meta.theme) || 'default';
     _root.innerHTML = '';
 
