@@ -9,6 +9,7 @@
  *   SpecterEngine.load(gameData)         → void
  *   SpecterEngine.getState()             → StateSnapshot
  *   SpecterEngine.performAction(action)  → { ok, message, state }
+ *   SpecterEngine.performRoomAction(id)  → { ok, message, state }
  *   SpecterEngine.getHint(puzzleId)      → string | null
  *   SpecterEngine.saveState()            → void  (localStorage)
  *   SpecterEngine.loadState()            → boolean
@@ -23,7 +24,8 @@
   // ─── Internal state ───────────────────────────────────────────────────────
 
   let _gameData   = null;   // the loaded content file (read-only reference)
-  let _gameId     = null;   // derived from meta.title, used for localStorage key
+  let _gameId     = null;   // derived from meta.title
+  let _saveKey    = null;   // localStorage key; overridable via load options
 
   // Mutable runtime state
   let _state = null;
@@ -51,7 +53,7 @@
 
   function _freshState() {
     return {
-      currentRoomId : _gameData.rooms[0].id,
+      currentRoomId : _gameData.meta.startRoom || _gameData.rooms[0].id,
       inventory     : [],
       flags         : {},
       solvedPuzzles : [],
@@ -150,7 +152,7 @@
         _state.solvedPuzzles = [];
         _state.eventProgress = {};
         _state.deductions  = [];
-        _state.currentRoomId = _gameData.rooms[0].id;
+        _state.currentRoomId = _gameData.meta.startRoom || _gameData.rooms[0].id;
         _state.timerRemaining = _gameData.meta.timeLimitSeconds || 0;
         return effect.message || 'The chamber resets…';
 
@@ -184,7 +186,8 @@
       return { ok: false, message: penalized ? base + ' ' + penalized : base };
     }
     const msg = _applyEffects(action.effects);
-    return { ok: true, message: msg || action.successMessage || 'Done.' };
+    // Callers supply the final fallback (step description, action description)
+    return { ok: true, message: msg || action.successMessage || null };
   }
 
   // ─── Event-chain logic ────────────────────────────────────────────────────
@@ -210,6 +213,7 @@
     if (step.action) {
       result = _executeAction(step.action);
       if (!result.ok) return result;
+      if (!result.message) result.message = step.description;
     }
 
     // Apply step-level effects (independent of the action)
@@ -266,20 +270,20 @@
   // ─── Persistence ──────────────────────────────────────────────────────────
 
   function saveState() {
-    if (!_gameId) return;
+    if (!_saveKey) return;
     if (typeof localStorage === 'undefined') return;
     try {
-      localStorage.setItem('specter_save_' + _gameId, JSON.stringify(_state));
+      localStorage.setItem(_saveKey, JSON.stringify(_state));
     } catch (e) {
       console.warn('[SpecterEngine] could not save state:', e);
     }
   }
 
   function loadSavedState() {
-    if (!_gameId) return false;
+    if (!_saveKey) return false;
     if (typeof localStorage === 'undefined') return false;
     try {
-      const raw = localStorage.getItem('specter_save_' + _gameId);
+      const raw = localStorage.getItem(_saveKey);
       if (!raw) return false;
       _state = JSON.parse(raw);
       return true;
@@ -292,7 +296,7 @@
   function resetState() {
     stopTimer();
     _state = _freshState();
-    if (_gameId) localStorage.removeItem('specter_save_' + _gameId);
+    if (_saveKey && typeof localStorage !== 'undefined') localStorage.removeItem(_saveKey);
   }
 
   // ─── State snapshot ───────────────────────────────────────────────────────
@@ -418,7 +422,7 @@
           break;
         }
         if (target.unlockCondition && !_evalCondition(target.unlockCondition)) {
-          result = { ok: false, message: action.lockedMessage || 'That way is locked.' };
+          result = { ok: false, message: action.lockedMessage || target.lockedMessage || 'That way is locked.' };
           break;
         }
         _state.currentRoomId = action.roomId;
@@ -600,6 +604,7 @@
         );
         if (matchingAction) {
           result = _executeAction(matchingAction);
+          if (result.ok && !result.message) result.message = matchingAction.description || 'Done.';
         } else {
           result = { ok: false, message: 'Unknown action.' };
         }
@@ -610,6 +615,29 @@
     // Auto-save after every action
     saveState();
 
+    return Object.assign(result, { state: getState() });
+  }
+
+  /**
+   * Execute a room-level action from the current room by its id. This is the
+   * supported way to fire room.actions; renderers should call it instead of
+   * routing through performAction.
+   */
+  function performRoomAction(actionId) {
+    if (!_gameData || !_state) {
+      return { ok: false, message: 'No game loaded.', state: null };
+    }
+    if (_state.ended) {
+      return { ok: false, message: 'The game has ended.', state: getState() };
+    }
+    const room = _byId(_gameData.rooms, _state.currentRoomId);
+    const matchingAction = (room.actions || []).find(a => a.id === actionId);
+    if (!matchingAction) {
+      return { ok: false, message: 'Unknown action.', state: getState() };
+    }
+    const result = _executeAction(matchingAction);
+    if (result.ok && !result.message) result.message = matchingAction.description || 'Done.';
+    saveState();
     return Object.assign(result, { state: getState() });
   }
 
@@ -624,6 +652,9 @@
     options     = options || {};
     _gameData   = gameData;
     _gameId     = gameData.meta.title.toLowerCase().replace(/\s+/g, '-');
+    // Hosts running foreign content (e.g. the playground) pass their own key
+    // so a same-titled custom game cannot clobber a real game's save.
+    _saveKey    = options.saveKey || ('specter_save_' + _gameId);
     stopTimer();
 
     if (options.resumeSaved && loadSavedState()) {
@@ -660,6 +691,7 @@
     load,
     getState,
     performAction,
+    performRoomAction,
     getHint,
     getHintDetails,
     saveState,
