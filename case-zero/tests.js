@@ -1,7 +1,7 @@
 /**
  * tests.js — Specter Engine test suite.
  *
- * Runs in both Node.js and browser (via tests.html).
+ * Runs in Node.js.
  *
  * Test groups:
  *   A. Schema validation — both content files pass the validator.
